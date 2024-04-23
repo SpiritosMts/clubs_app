@@ -66,7 +66,7 @@ class _LoginState extends State<Login> {
             child: Column(
               children: [
                 SizedBox(
-                  height: 30,
+                  height: 100,
                 ),
 
                 // logo Image
@@ -214,34 +214,6 @@ class _LoginState extends State<Login> {
                                   fontSize: 15,
                                   fontWeight: FontWeight.w900,
                                 ),
-                              ),
-                            ),
-                          ],
-                        ),
-                        SizedBox(
-                          height: 15,
-                        ),
-                        /// divider
-                        Row(
-                          children: <Widget>[
-                            Expanded(
-                              child: Divider(
-                                color: loginUsingCol,
-                              ),
-                            ),
-                            Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                              child: Text(
-                                'Login using',
-                                style: TextStyle(
-                                  color: loginUsingCol,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ),
-                            Expanded(
-                              child: Divider(
-                                color: loginUsingCol,
                               ),
                             ),
                           ],

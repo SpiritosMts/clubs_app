@@ -75,7 +75,9 @@ class ScUser {
   // Create ScUser object from JSON
   factory ScUser.fromJson(Map<String, dynamic> json) {
     return ScUser(
+
       id: json['id'] ?? '',
+      name: json['name'] ?? '',
       email: json['email'] ?? '',
       pwd: json['pwd'] ?? '',
       phone: json['phone'] ?? '',

@@ -1,11 +1,9 @@
-import 'dart:html';
 
 import 'package:animated_text_kit/animated_text_kit.dart';
 import 'package:clubs_app/bindings.dart';
 import 'package:clubs_app/models/request.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 
 
 import 'package:flutter/material.dart';
@@ -31,7 +29,7 @@ ylwDivider() {
 }
 
 
-userCard(ScUser user,i,{bool tappable = true,    Function()? btnOnPress,}){
+userCard(ScUser user,i,{bool tappable = true,bool canDelete = true,    Function()? btnOnPress,}){
   double bottomProdName = 9;
   double bottomProdBuy = 6;
 
@@ -165,7 +163,7 @@ userCard(ScUser user,i,{bool tappable = true,    Function()? btnOnPress,}){
                 ],
               ),
             ),
-            Positioned(
+           if(canDelete) Positioned(
               top: -4,
               right: -4,
               child: IconButton(
@@ -196,7 +194,7 @@ clubCard(Club clb,i,{bool tappable = true,    Function()? btnOnPress,}){
 
     onTap: () {
       if(tappable){
-        layCtr.selectClub(clb);
+        layCtr.selectClub(clb.id);
         if(cUser.isAdmin){
           layCtr.openClub();
         }else{
@@ -232,78 +230,85 @@ clubCard(Club clb,i,{bool tappable = true,    Function()? btnOnPress,}){
               Image.asset(
                 'assets/images/group.png',
                 fit: BoxFit.cover,
-                width: 150,
-                height: 150,
+                width: 80,
+                height: 80,
               )    ,
                       const SizedBox(width: 16),
-                      Column(
-                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Padding(
-                            padding:  EdgeInsets.only(bottom: bottomProdName,top: 5),
-                            child: Text('${clb.name}',style: TextStyle(
-                                color: normalTextCol,
-                                fontWeight: FontWeight.w400,
-                                fontSize: 17
-                            )),
-                          ),
+                      SizedBox(
+                        width: 60.w,
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Padding(
+                              padding:  EdgeInsets.only(bottom: bottomProdName,top: 5),
+                              child: Text('${clb.name}',style: TextStyle(
+                                  color: normalTextCol,
+                                  fontWeight: FontWeight.w400,
+                                  fontSize: 17
+                              )),
+                            ),
 
-                          ///email
-                          Padding(
-                            padding:  EdgeInsets.only(bottom: bottomProdBuy),
-                            child: RichText(
-                              textAlign: TextAlign.start,
-                              text: TextSpan(children: [
-                                if (true)
+                            ///email
+                            Padding(
+                              padding:  EdgeInsets.only(bottom: bottomProdBuy),
+                              child: RichText(
+                                textAlign: TextAlign.start,
+                                text: TextSpan(children: [
+                                  if (true)
+                                    TextSpan(
+                                        text: 'memebers:'.tr,
+                                        style: GoogleFonts.almarai(
+                                          height: 1,
+                                          textStyle: TextStyle(color: transparentTextCol, fontSize: 13, fontWeight: FontWeight.w500),
+                                        )),
                                   TextSpan(
-                                      text: 'memebers:'.tr,
+                                      text: '  ${clb.members.length}',
                                       style: GoogleFonts.almarai(
                                         height: 1,
-                                        textStyle: TextStyle(color: transparentTextCol, fontSize: 13, fontWeight: FontWeight.w500),
+                                        textStyle: TextStyle(
+                                            color: blueCol,
+                                            fontSize: 13,
+                                            fontWeight: FontWeight.w400),
                                       )),
-                                TextSpan(
-                                    text: '  ${clb.members}',
-                                    style: GoogleFonts.almarai(
-                                      height: 1,
-                                      textStyle: TextStyle(
-                                          color: blueCol,
-                                          fontSize: 13,
-                                          fontWeight: FontWeight.w400),
-                                    )),
 
-                              ]),
+                                ]),
+                              ),
                             ),
-                          ),
-                          ///phone
-                          Padding(
-                            padding:  EdgeInsets.only(bottom: bottomProdBuy),
-                            child: RichText(
-                              textAlign: TextAlign.start,
-                              text: TextSpan(children: [
-                                if (true)
+                            ///desc
+                            Padding(
+                              padding:  EdgeInsets.only(bottom: bottomProdBuy),
+                              child: RichText(
+                                overflow: TextOverflow.ellipsis,
+
+                                maxLines: 2,
+                                textAlign: TextAlign.start,
+                                text: TextSpan(children: [
+                                  if (true)
+                                    TextSpan(
+                                        text: 'about:'.tr,
+                                        style: GoogleFonts.almarai(
+                                          height: 1,
+                                          textStyle: TextStyle(color: transparentTextCol, fontSize: 13, fontWeight: FontWeight.w500),
+                                        )),
                                   TextSpan(
-                                      text: 'about:'.tr,
+                                      text: '  ${clb.desc}',
+
                                       style: GoogleFonts.almarai(
-                                        height: 1,
-                                        textStyle: TextStyle(color: transparentTextCol, fontSize: 13, fontWeight: FontWeight.w500),
+                                        height: 1.2,
+                                        textStyle: TextStyle(
+                                            color: Colors.black45,
+                                            fontSize: 13,
+                                            fontWeight: FontWeight.w400),
                                       )),
-                                TextSpan(
-                                    text: '  ${clb.desc}',
-                                    style: GoogleFonts.almarai(
-                                      height: 1,
-                                      textStyle: TextStyle(
-                                          color: blueCol,
-                                          fontSize: 13,
-                                          fontWeight: FontWeight.w400),
-                                    )),
 
-                              ]),
+                                ]),
+                              ),
                             ),
-                          ),
 
 
-                        ],
+                          ],
+                        ),
                       ),
                     ],
                   ),
@@ -350,7 +355,10 @@ requestCard(JoinRequest req,i,{bool tappable = true,    Function()? btnOnPress,}
                   Row(
                     children: [
                       /// IMAGE
-                      monthSquare(req.date)    ,
+                      Container(
+                        width:60,
+
+                          child: monthSquare(req.date,withSec: true))    ,
                       const SizedBox(width: 16),
                       Column(
                         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -395,7 +403,8 @@ requestCard(JoinRequest req,i,{bool tappable = true,    Function()? btnOnPress,}
                           Padding(
                             padding: EdgeInsets.symmetric(vertical: 15.0),
                             child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                              mainAxisAlignment: MainAxisAlignment.end,
+                              crossAxisAlignment: CrossAxisAlignment.end,
                               children: [
                                 //cancel
                                 TextButton(
@@ -408,6 +417,7 @@ requestCard(JoinRequest req,i,{bool tappable = true,    Function()? btnOnPress,}
                                     style: TextStyle(color: dialogBtnCancelTextCol),
                                   ),
                                 ),
+                                SizedBox(width: 15,),
                                 //add
                                 TextButton(
                                   style: filledBtnStyle(),
@@ -432,7 +442,7 @@ requestCard(JoinRequest req,i,{bool tappable = true,    Function()? btnOnPress,}
                 ],
               ),
             ),
-              Positioned(
+             if(false) Positioned(
               top: 7,
               right: 10,
               child: Padding(
@@ -484,12 +494,27 @@ eventCard(ClubEvent ev,i,{bool tappable = true,    Function()? btnOnPress,}){
 
                   ///event image
 
+                  Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Container(child: ev.imageUrl!=''?  Image.network(
+                      ev.imageUrl,
+                      fit: BoxFit.cover,
+                      width: double.infinity,
+                      height: 150.0, // Set the height as per your preference
+                    ):Image.asset(
+                      'assets/images/event.png',
+                      fit: BoxFit.fitHeight,
+                      width: double.infinity,
+                      height: 150.0, // Set the height as per your preference
+                    ),),
+                  ),
+
                   /// title
                   Padding(
                     padding:  EdgeInsets.only(bottom: bottomProdName,top: 5),
                     child: Text('${ev.title}',style: TextStyle(
-                        color: normalTextCol,
-                        fontWeight: FontWeight.w400,
+                        color: blueCol,
+                        fontWeight: FontWeight.w600,
                         fontSize: 17
                     )),
                   ),
@@ -524,7 +549,7 @@ eventCard(ClubEvent ev,i,{bool tappable = true,    Function()? btnOnPress,}){
                             style: GoogleFonts.almarai(
                               height: 1,
                               textStyle: TextStyle(
-                                  color: blueCol,
+                                  color: normalTextCol,
                                   fontSize: 15,
                                   fontWeight: FontWeight.w400),
                             )),
@@ -537,6 +562,20 @@ eventCard(ClubEvent ev,i,{bool tappable = true,    Function()? btnOnPress,}){
                 ],
               ),
 
+            ),
+            if(true) Positioned(
+              top: -4,
+              right: -4,
+              child: IconButton(
+                icon: const Icon(Icons.close),
+                color: Colors.redAccent,
+                splashRadius: 1,
+                onPressed: () {
+                  layCtr.deleteEvent(ev.id).then((value) {
+                    layCtr.refreshThisClub();
+                  });
+                },
+              ),
             ),
           ],
         ),
@@ -663,8 +702,14 @@ return Padding(
 );
 }
 
-Widget monthSquare(String date) {
-  DateTime dateTime = dateFormatHM.parse(date);
+Widget monthSquare(String date,{bool withSec = false}) {
+  DateTime dateTime;
+  if(withSec){
+    dateTime = dateFormatHMS.parse(date);//withSec = true
+  }else{
+     dateTime = dateFormatHM.parse(date);//withSec = false
+
+  }
   String day = dateTime.day.toString();
   String monthName = getMonthName(dateTime.month);
   String weekDayName = getWeekdayName(dateTime.weekday);

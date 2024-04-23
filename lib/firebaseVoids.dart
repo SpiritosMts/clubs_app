@@ -13,35 +13,6 @@ import 'bindings.dart';
 import 'myVoids.dart';
 import 'dart:io';
 
-Future<List<String>> getChildrenKeys(String ref) async {
-  List<String> children = [];
-  DatabaseReference serverData = database!.ref(ref); //'patients/sr1'
-  final snapshot = await serverData.get();
-  if (snapshot.exists) {
-    snapshot.children.forEach((element) {
-      children.add(element.key.toString());
-    });
-    //print('## <$ref> exists with [${children.length}] children');
-  } else {
-    //print('## <$ref> DONT exists');
-  }
-  return children;
-}
-
-Future<int> getChildrenNum(String ref) async {
-  int childrennum = 0;
-  DatabaseReference serverData = database!.ref(ref); //'patients/sr1'
-  final snapshot = await serverData.get();
-  if (snapshot.exists) {
-    childrennum = snapshot.children.length;
-    print('## <$ref> exists with [${childrennum}] children');
-  } else {
-    print('## <$ref> DONT exists');
-  }
-  //update(['chart']);
-  return childrennum;
-}
-
 /// upload one file to fb
 Future<String> uploadOneImgToFb(String filePath, PickedFile? imageFile) async {
   if (imageFile != null) {
@@ -160,8 +131,7 @@ Future<void> deleteFileByUrlFromStorage(String url) async {
   }
 }
 
-Future<void> addElementsToList(List newElements, String fieldName, String docID, String collName,
-    {bool canAddExistingElements = true}) async {
+Future<void> addElementsToList(List newElements, String fieldName, String docID, String collName, {bool canAddExistingElements = true}) async {
   print('## start adding list <$newElements> TO <$fieldName>_<$docID>_<$collName>');
 
   CollectionReference coll = FirebaseFirestore.instance.collection(collName);
@@ -242,17 +212,6 @@ Future<void> removeElementsFromList(List elements, String fieldName, String docI
   });
 }
 
-
-getDocProps(CollectionReference coll, docID) async {
-  await coll.doc(docID).get().then((docSnap) {
-    num number = docSnap.get('number');
-    GeoPoint geoPoint = docSnap.get('geopoint');
-    String string = docSnap.get('string');
-    Map<String, dynamic> map = docSnap.get('map');
-    List list = docSnap.get('list');
-    var nullVar = docSnap.get('null');
-  }).catchError((e) => print('## error getting doc with id <$docID>'));
-}
 
 clearCollection(CollectionReference coll) async {
   var snapshots = await coll.get();
@@ -356,8 +315,6 @@ Future<List<T>> getAlldocsModelsFromFb<T>(bool online, CollectionReference coll,
 
 
   } else {//offline
-    models = await loadPrefsList(localKey!, fromJson) ;
-    print('## from "PREFS" ## (${models.length}) models; key <${localKey}>');
 
   }
 
@@ -458,7 +415,7 @@ void deleteFromMap({coll, docID, fieldMapName, String mapKeyToDelete ='', bool w
         //search map key depending on specific value
         if (targetInvID != '') {
           for (var entry in fieldMap.entries) {
-            if (entry.value['invID'] == targetInvID) {
+            if (entry.value['id'] == targetInvID) { //the ID name in the map
               keyToDelete = entry.key;
             }
           }
@@ -564,6 +521,42 @@ Future<void> addToMap({coll, docID, fieldMapName, mapToAdd, Function()? addSucce
   });
 }
 
+Future<void> addToMap0({coll, docID, fieldMapName, mapToAdd, Function()? addSuccess, bool withBackDialog = false}) async {
+  coll.doc(docID).get().then((DocumentSnapshot documentSnapshot) async {
+    if (documentSnapshot.exists) {
+      dynamic fieldData = documentSnapshot.get(fieldMapName);
+
+      if (fieldData is Map<String, dynamic>) {
+        // Safe to proceed because the data is a map
+        Map<String, dynamic> fieldMap = fieldData;
+
+        // Add new item to the map
+        fieldMap[getLastIndex(fieldMap, afterLast: true)] = mapToAdd;
+
+        await coll.doc(docID).update({
+          '${fieldMapName}': fieldMap,
+        }).then((value) async {
+          if (withBackDialog) {
+            Get.back();
+          }
+          print('## item to fieldMap added');
+          if (addSuccess != null) {
+            addSuccess();
+          }
+        }).catchError((error) async {
+          print('## item to fieldMap FAILED to added');
+          showSnack(snapshotErrorMsg, color: Colors.black54);
+        });
+      } else {
+        // Handle the case where the data is not a map
+        print('Error: Expected a Map<String, dynamic> but found a different type');
+        // Optionally, you could raise an exception or take other actions here
+      }
+    } else {
+      print('## doc<$docID> does not exist');
+    }
+  });
+}
 
 
 /// //////////////////////////////////////// MANUAL CHNAGES TEST ////////////////////////////////////////////

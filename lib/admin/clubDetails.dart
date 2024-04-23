@@ -27,151 +27,197 @@ class ClubDetails extends StatefulWidget {
 class _ClubDetailsState extends State<ClubDetails> {
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        backgroundColor: appBarBgColor,
-        title: Text(
-          'Club Info',style: TextStyle(
-          fontWeight: FontWeight.w500,
-          color: appBarTitleColor,
-        ),
-        ),
-        bottom: appBarUnderline(),
-        leading:IconButton(
-          icon: Icon(Icons.group,color: appBarNotificationBellColor,),
-          onPressed: () {
-            Get.to(()=>ClubUsersList());
+    return GetBuilder<LayoutCtr>(
+      builder: (_) {
+        return Scaffold(
+          appBar: AppBar(
+            backgroundColor: appBarBgColor,
+            title: Text(
+              'Club Info',style: TextStyle(
+              fontWeight: FontWeight.w500,
+              color: appBarTitleColor,
+            ),
+            ),
+            bottom: appBarUnderline(),
+            leading:IconButton(
+              icon: Icon(Icons.group,color: appBarNotificationBellColor,),
+              onPressed: () {
+                Get.to(()=>ClubUsersList());
 
-          },
-        ) ,
-        actions: [
-         if(cUser.isAdmin) GestureDetector(
-            onTap: () {
-              showAnimDialog(layCtr.addEventDialog());
-            },
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 11.0),
-              child: Center(
-                child: Icon(
-                  Icons.add,
-                  color: appBarButtonsCol,
+              },
+            ) ,
+            actions: [
+             if(cUser.isAdmin) ...[GestureDetector(
+               onTap: () {
+                 layCtr.refreshThisClub();
+               },
+               child: Padding(
+                 padding: const EdgeInsets.symmetric(horizontal: 11.0),
+                 child: Center(
+                   child: Icon(
+                     Icons.refresh,
+                     color: appBarButtonsCol,
+                   ),
+                 ),
+               ),
+             ),GestureDetector(
+               onTap: () {
+                 showAnimDialog(layCtr.addEventDialog());
+               },
+               child: Padding(
+                 padding: const EdgeInsets.symmetric(horizontal: 11.0),
+                 child: Center(
+                   child: Icon(
+                     Icons.add,
+                     color: appBarButtonsCol,
+                   ),
+                 ),
+               ),
+             )],
+            ],
+          ),
+
+          body: Container(
+            color: bgCol,
+            child:  Padding(
+              padding: EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              SizedBox(
+                height: 15,
+              ),
+              Text(
+                layCtr.selectedClub.name, // Replace with actual name
+                style: TextStyle(
+                  color: normalTextCol,
+                  fontSize: 26,
+                  fontWeight: FontWeight.bold,
                 ),
               ),
-            ),
-          ),
-        ],
-      ),
-
-      body: Container(
-        color: bgCol,
-        child: GetBuilder<LayoutCtr>(builder: (_) {
-          return Padding(
-            padding: EdgeInsets.all(16.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                SizedBox(
-                  height: 15,
-                ),
-                Text(
-                  layCtr.selectedClub.name, // Replace with actual name
-                  style: TextStyle(
-                    color: normalTextCol,
-                    fontSize: 26,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                SizedBox(height: 20.0),
-                Padding(
-                  padding: const EdgeInsets.only(left: 10.0),
-                  child: Row(
-                    children: [
-                      Expanded(
-                        flex: 1,
-                        child: AvatarGlow(
-                          child: RandomAvatar('saytoonz', trBackground: false, height: 150, width: 150,),
-                        ),
-                      ),
-                      SizedBox(width: 20.0),
-                      Expanded(
-                        flex: 2,
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            Text(
-                              'Members:'.tr,
-                              style: TextStyle(
-                                fontSize: 23.0,
-                                color: normalTextCol.withOpacity(0.5),
-                                fontWeight: FontWeight.bold,
-                              ),
+              SizedBox(height: 20.0),
+              Padding(
+                padding: const EdgeInsets.only(left: 30.0),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Image.asset(
+                      'assets/images/group.png',
+                      fit: BoxFit.cover,
+                      width: 120,
+                      height: 120,
+                    )    ,
+                    SizedBox(width: 20.0),
+                    Expanded(
+                      flex: 2,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          Text(
+                            'Members:'.tr,
+                            style: TextStyle(
+                              fontSize: 23.0,
+                              color: normalTextCol.withOpacity(0.5),
+                              fontWeight: FontWeight.bold,
                             ),
-                            SizedBox(height: 5.0),
-                            RichText(
-                              textAlign: TextAlign.start,
-                              softWrap: true,
-                              text: TextSpan(children: [
-                                TextSpan(
-                                  text: '${layCtr.selectedClub.members.length}',
-                                  style: GoogleFonts.almarai(
-                                    fontSize: 26.sp,
-                                    color: blueCol.withOpacity(0.8),
-                                    fontWeight: FontWeight.w600,
-                                  ),
+                          ),
+                          SizedBox(height: 5.0),
+                          RichText(
+                            textAlign: TextAlign.start,
+                            softWrap: true,
+                            text: TextSpan(children: [
+                              TextSpan(
+                                text: '${layCtr.selectedClub.members.length}',
+                                style: GoogleFonts.almarai(
+                                  fontSize: 26.sp,
+                                  color: blueCol.withOpacity(0.8),
+                                  fontWeight: FontWeight.w600,
                                 ),
-                                const TextSpan(text: ' '),
-                                TextSpan(
-                                    text: '  Pts',
-                                    style: GoogleFonts.almarai(
-                                      height: 1,
-                                      textStyle:
-                                      const TextStyle(color: transparentTextCol, fontSize: 20, fontWeight: FontWeight.w500),
-                                    )),
-                              ]),
-                            ),
-                            SizedBox(height: 5.0),
+                              ),
+                              const TextSpan(text: ' '),
+                             if(false) TextSpan(
+                                  text: '  Pts',
+                                  style: GoogleFonts.almarai(
+                                    height: 1,
+                                    textStyle:
+                                    const TextStyle(color: transparentTextCol, fontSize: 20, fontWeight: FontWeight.w500),
+                                  )),
+                            ]),
+                          ),
+                          SizedBox(height: 5.0),
 
-                          ],
-                        ),
+                        ],
                       ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
-                SizedBox(
-                  height: 25,
-                ),
+              ),
+              Padding(
+                padding:  EdgeInsets.only(bottom: 10,left: 20,top: 10),
+                child: RichText(
+                  overflow: TextOverflow.ellipsis,
+maxLines: 5,
+                  textAlign: TextAlign.start,
+                  text: TextSpan(children: [
+                    if (true)
+                      TextSpan(
+                          text: 'about:'.tr,
+                          style: GoogleFonts.almarai(
+                            height: 1,
+                            textStyle: TextStyle(color: Colors.black87, fontSize: 15, fontWeight: FontWeight.w500),
+                          )),
+                    TextSpan(
+                        text: '  ${layCtr.selectedClub.desc}',
 
-                CustomDivider(
-                  text: '  Events  ',
+                        style: GoogleFonts.almarai(
+                          height: 1.2,
+                          textStyle: TextStyle(
+                              color: Colors.black45,
+                              fontSize: 17,
+                              fontWeight: FontWeight.w400),
+                        )),
+
+                  ]),
                 ),
-                SizedBox(height: 20,),
-                layCtr.usersOfClub(layCtr.selectedClub).isEmpty?Padding(
-                    padding: const EdgeInsets.only(top: 100),
-                    child: Center(child: Text('No events to show', style: TextStyle(
-                      fontSize: 15
-                    ),),)): Expanded(
-                  child: Container(
-                    child: ListView.builder(
-                      //  physics: const BouncingScrollPhysics(),
-                        padding: const EdgeInsets.only(
-                          top: 10,
-                          bottom: 20,
-                          right: 0,
-                          left: 0,
-                        ),
-                        //itemExtent: 100,// card height
-                        itemCount: layCtr.selectedEvents.length,
-                        itemBuilder: (BuildContext context, int index) {
-                          ClubEvent ev = (layCtr.selectedEvents[index]);
-                          return eventCard(ev, index);
-                        }),
-                  ),
-                )
-              ],
-            ),
-          );
-        }),
-      ),
+              ),
+
+              SizedBox(
+                height: 25,
+              ),
+
+              CustomDivider(
+                text: '  Events (${layCtr.selectedEvents.length}) ',
+              ),
+              SizedBox(height: 20,),
+              layCtr.selectedEvents.isEmpty?Padding(
+                  padding: const EdgeInsets.only(top: 100),
+                  child: Center(child: Text('No events to show', style: TextStyle(
+                      fontSize: 17
+                  ),),)): Expanded(
+                child: Container(
+                  child: ListView.builder(
+                    //  physics: const BouncingScrollPhysics(),
+                      padding: const EdgeInsets.only(
+                        top: 10,
+                        bottom: 20,
+                        right: 0,
+                        left: 0,
+                      ),
+                      //itemExtent: 100,// card height
+                      reverse: true,
+                      itemCount: layCtr.selectedEvents.length,
+                      itemBuilder: (BuildContext context, int index) {
+                        ClubEvent ev = (layCtr.selectedEvents[index]);
+                        return eventCard(ev, index);
+                      }),
+                ),
+              )
+            ],
+          ),
+        ),
+          ),
+        );
+      }
     );
   }
 }
@@ -191,6 +237,7 @@ class CustomDivider extends StatelessWidget {
           child: Divider(
             color: Colors.orange,
             height: 3,
+            thickness: 2,
           ),
         ),
         Padding(
@@ -208,6 +255,8 @@ class CustomDivider extends StatelessWidget {
           child: Divider(
             color: Colors.orange,
             height: 3,
+            thickness: 2,
+
           ),
         ),
       ],

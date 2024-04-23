@@ -1,4 +1,3 @@
-
 import 'event.dart';
 
 class Club {
@@ -22,6 +21,14 @@ class Club {
 
   // Convert Club object to JSON
   Map<String, dynamic> toJson() {
+    // Convert the list of events to a map where the key is the event ID and the value is the JSON representation of the event
+    Map<String, dynamic> eventsToMap = {};
+    for (var event in events) {
+      if (event.id != null && event.id.isNotEmpty) {
+        eventsToMap[event.id] = event.toJson();
+      }
+    }
+
     return {
       'id': id,
       'name': name,
@@ -29,12 +36,22 @@ class Club {
       'logoUrl': logoUrl,
       'createdTime': createdTime,
       'members': members,
-      'events': events.map((ClubEvent event) => event.toJson()).toList(),
+      'events': eventsToMap,
     };
   }
 
   // Create Club object from JSON
   factory Club.fromJson(Map<String, dynamic> json) {
+    // Convert the JSON map of events to a list of ClubEvent objects
+    List<ClubEvent> eventsFromMap = [];
+    if (json.containsKey('events') && json['events'] != null) {
+      (json['events'] as Map<String, dynamic>).forEach((key, eventJson) {
+        if (eventJson is Map<String, dynamic>) {
+          eventsFromMap.add(ClubEvent.fromJson(eventJson));
+        }
+      });
+    }
+
     return Club(
       id: json['id'] ?? '',
       name: json['name'] ?? '',
@@ -42,9 +59,7 @@ class Club {
       logoUrl: json['logoUrl'] ?? '',
       createdTime: json['createdTime'] ?? '',
       members: List<String>.from(json['members'] ?? []),
-      events: json.containsKey('events') && json['events'] != null
-          ? (json['events'] as List).map((eventJson) => ClubEvent.fromJson(eventJson)).toList()
-          : [],
+      events: eventsFromMap,
     );
   }
 }

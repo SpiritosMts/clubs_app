@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:clubs_app/models/club.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -19,18 +20,28 @@ import '../styles.dart';
 import 'package:uuid/uuid.dart';
 
 class LayoutCtr extends GetxController {
-  String appBarText =cUser.isAdmin? 'All Clubs':'My Clubs';//home
+  String appBarText ='';//appbar title
   List<Widget> appBarBtns=[];
 
   @override
   onInit() {
     super.onInit();
     print('## ## init LayoutCtr');
-    sharedPrefs!.reload();
     Future.delayed(const Duration(milliseconds: 50), ()  async {
-      refreshUsers();
-      refreshRequests();
+      refreshAll();
+
     });
+  }
+  void refreshAll() async {
+    // Execute all refresh functions concurrently
+    await Future.wait([
+      refreshUsers(),
+      refreshRequests(),
+      refreshClubs(),
+    ]);
+    onScreenSelected(0);
+
+    update();
   }
   /// *************************************************************************************
 
@@ -43,21 +54,21 @@ class LayoutCtr extends GetxController {
     switch (index) {
 
       case 0:
-        updateAppbar(title:cUser.isAdmin? 'All Clubs':'My Clubs',btns: []);
-        if(!cUser.isAdmin){
-          selectedClubs = myClubs;
-        }else{
-          selectedClubs = allClubs;
-
-        }
-        break;
-
-      case 1:
-        updateAppbar(title:cUser.isAdmin? 'Other Clubs':'Join Requests',btns: []);
-        break;
-
-      case 2:
-        updateAppbar(title:cUser.isAdmin? 'All Users':'My Info',btns: cUser.isAdmin? [
+        updateAppbar(title:cUser.isAdmin? 'All Clubs':'My Clubs',btns:cUser.isAdmin? [
+          GestureDetector(
+          onTap: () {
+            refreshAll();
+          },
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 11.0),
+            child: Center(
+              child: Icon(
+                Icons.refresh,
+                color: appBarButtonsCol,
+              ),
+            ),
+          ),
+        ),
           GestureDetector(
             onTap: () {
               showAnimDialog(addClubDialog());
@@ -73,16 +84,64 @@ class LayoutCtr extends GetxController {
               ),
             ),
           ),
-        ]:[]);
+        ]:[
+          GestureDetector(
+            onTap: () {
+              refreshAll();
+            },
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 11.0),
+              child: Center(
+                child: Icon(
+                  Icons.refresh,
+                  color: appBarButtonsCol,
+                ),
+              ),
+            ),
+          ),
+
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Text(cUser.name,style: TextStyle(color: blueCol),),
+              ),
+            ],
+          )
+        ]);
+        if(!cUser.isAdmin){
+          selectedClubs = myClubs;
+        }else{
+          selectedClubs = allClubs;
+        }
+
+        update();
+        break;
+
+      case 1:
+        updateAppbar(title:cUser.isAdmin? 'Join Requests':'Other Clubs',btns: []);
+        update();
+        if(!cUser.isAdmin){
+          selectedClubs = otherClubs;
+        }
+        break;
+
+      case 2:
+        updateAppbar(title:cUser.isAdmin? 'All Users':'My Info',btns: cUser.isAdmin? []:[]);
+        update();
+
         break;
 
 
 
-      default:
-        //updateAppbar(title:cUser.isAdmin? 'All Clubs':'My Clubs'.tr,btns: []);
-
 
     }
+    print('## selected screen ($index) selectedClubs (${selectedClubs.length})');
+    print('## all clubs (${allClubs.length}) // my clubs (${myClubs.length}) // other clubs (${otherClubs.length})');
+
+
   }
   /// *************************************************************************************
 
@@ -113,10 +172,15 @@ class LayoutCtr extends GetxController {
   Club selectedClub=Club();
   List<ClubEvent> selectedEvents = [];
   List<ScUser> selectedUsers = [];
-  selectClub(club){
-    selectedClub=club;
+  selectClub(clubID){
+    for (var club in allClubs) {
+      if (club.id == clubID) {
+        selectedClub = club;
+      }
+    }
     selectedEvents = selectedClub.events;
     selectedUsers = usersOfClub(layCtr.selectedClub);
+    print('## selected club <${clubID}>');
     update();
   }
 
@@ -127,10 +191,11 @@ class LayoutCtr extends GetxController {
   List<Club> myClubs =[];
   List<Club> otherClubs =[];
 
-  refreshUsers() async {
+  Future<void> refreshUsers() async {
     allUsers = await getAlldocsModelsFromFb<ScUser>(
         true, usersColl, (json) => ScUser.fromJson(json),
         localKey: '');
+    update();
   }
   List<ScUser> usersOfClub(Club club){
     List studentIDs = club.members;
@@ -144,6 +209,8 @@ class LayoutCtr extends GetxController {
         list.add(usr);
       }
     }
+    update();
+
 
     return list;
   }
@@ -153,6 +220,102 @@ class LayoutCtr extends GetxController {
 
   ///event
   addEventDialog() {
+    return AlertDialog(
+      backgroundColor: dialogBgCol,
+      title: Text('Add New Event',
+        style: TextStyle(
+          color: dialogTitleCol,
+        ),),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.all(
+          Radius.circular(12.0),
+        ),
+      ),
+      content: Builder(
+        builder: (context) {
+
+          return SizedBox(
+            //height: 100.h / 1.7,
+            width: 100.w,
+            child: AddEvDia(),
+          );
+        },
+      ),
+    );
+  }
+  addEventToDB() async {
+    try{
+
+    String specificID = Uuid().v1();
+
+    /// add the image
+    String itemImageUrl = await uploadOneImgToFb('clubs/${selectedClub.name}-${selectedClub.id}/events', newItemImage);
+
+    ClubEvent newEvent = ClubEvent(
+      title: newEventTitleTec.text,
+      desc: newEventDescTec.text,
+      date: todayToString(showHoursNminutes: true),
+       imageUrl: itemImageUrl,
+       id: specificID,
+
+    );
+
+
+      /// add to map
+      addToMap(
+          coll: clubsColl,
+          docID: selectedClub.id,
+          fieldMapName: 'events',
+          mapToAdd: newEvent.toJson(),
+
+      );
+
+
+      Get.back(); //hide loading
+      newEventDescTec.clear();
+      newEventTitleTec.clear();
+    newItemImage = null;
+    refreshThisClub();
+    }catch  (err){
+      print('## cant create event  : $err');
+    }
+  }
+  Future<void> deleteEvent(id)async{
+    deleteFromMap(coll: clubsColl,docID: selectedClub.id,fieldMapName: 'events',targetInvID: id);
+  }
+
+  ///clubs
+  refreshThisClub(){
+    refreshClubs().then((value) {
+      selectClub(selectedClub.id);
+      update();
+    });
+    update();
+  }
+  Future<void> refreshClubs() async {
+    print('## refreshing clubs ...');
+
+    allClubs = await getAlldocsModelsFromFb<Club>(
+        true, clubsColl, (json) => Club.fromJson(json),
+        localKey: '');
+    for (Club club in allClubs) {
+      if (club.members.contains(cUser.id)) {
+        // user is in this club
+        myClubs.add(club);
+      } else {
+        // user is NOT in this club
+        otherClubs.add(club);
+      }
+    }
+    if(!cUser.isAdmin){
+      selectedClubs = myClubs;
+    }else{
+      selectedClubs = allClubs;
+
+    }
+    print('## all clubs (${allClubs.length}) // my clubs (${myClubs.length}) // other clubs (${otherClubs.length})');
+  }
+  addClubDialog() {
     return AlertDialog(
       backgroundColor: dialogBgCol,
       title: Text('Add New Club',
@@ -168,23 +331,23 @@ class LayoutCtr extends GetxController {
         scrollDirection: Axis.vertical,
 
         child: Form(
-          key: addEventKey,
+          key: addClubKey,
           child: Column(
             mainAxisAlignment: MainAxisAlignment.end,
             children: [
               SizedBox(height: 20,),
 
-              /// title
+              /// components
 
               customTextField(
-                textInputType: TextInputType.number,
-                controller: newEventTitleTec,
-                labelText: 'Title'.tr,
+                textInputType: TextInputType.text,
+                controller: newClubNameTec,
+                labelText: 'Name'.tr,
                 hintText: ''.tr,
                 icon: Icons.title,
                 validator: (value) {
                   if (value!.isEmpty) {
-                    return "title can't be empty".tr;
+                    return "name can't be empty".tr;
                   }
 
 
@@ -194,8 +357,8 @@ class LayoutCtr extends GetxController {
               ),
               SizedBox(height: 18,),
               customTextField(
-                textInputType: TextInputType.number,
-                controller: newEventDescTec,
+                textInputType: TextInputType.text,
+                controller: newClubDescTec,
                 labelText: 'Description'.tr,
                 hintText: ''.tr,
                 icon: Icons.description,
@@ -207,72 +370,7 @@ class LayoutCtr extends GetxController {
               ),
               SizedBox(height: 18,),
 
-              /// image
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  //add image
-                  ButtonTheme(
-                    //minWidth: 100.w  / 9,
-                    child: ElevatedButton(
-                      onPressed: () async {
-                        PickedFile img = await showImageChoiceDialog();
-                        updateImage(img);
-                      },
-                      child: Text('Add Image'.tr),
-                    ),
-                  ),
 
-                  //image_display
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 0.0),
-                    child: SizedBox(
-                      child: Stack(
-                        children: [
-                          Container(
-                            padding: EdgeInsets.all(2),
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(13),
-                              border: Border.all(
-                                color: primaryColor,
-                                width: 2,
-                              ),
-                            ),
-                            child: ClipRRect(
-                              borderRadius: BorderRadius.circular(9),
-                              child: SizedBox(
-                                width: 23.w ,
-                                height: 15.w,
-                                //size: Size.fromRadius(30),
-                                child: newItemImage != null
-                                    ? Image.file(
-                                  File(newItemImage!.path),
-                                  fit: BoxFit.cover,
-                                )
-                                    : Container(),
-                              ),
-                            ),
-                          ),
-
-                          ///delete
-                          if (newItemImage != null)
-                            Positioned(
-                              top: -11,
-                              right: -11,
-                              child: IconButton(
-                                  icon: const Icon(Icons.close),
-                                  color: Colors.grey,
-                                  splashRadius: 1,
-                                  onPressed: () {
-                                    deleteImage();
-                                  }),
-                            ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ],
-              ),
 
 
 
@@ -316,162 +414,6 @@ class LayoutCtr extends GetxController {
       ),
     );
   }
-  addEventToDB() async {
-    try{
-
-    String specificID = Uuid().v1();
-
-    /// add the image
-    String itemImageUrl = await uploadOneImgToFb('clubs/${selectedClub.name}-${selectedClub.id}/events', newItemImage);
-
-    ClubEvent newEvent = ClubEvent(
-      title: newEventTitleTec.text,
-      desc: newEventDescTec.text,
-      date: todayToString(showHoursNminutes: true),
-       imageUrl: itemImageUrl,
-       id: specificID,
-
-    );
-
-
-      /// add to map
-      addToMap(
-          coll: clubsColl,
-          docID: selectedClub.id,
-          fieldMapName: 'events',
-          mapToAdd: newEvent.toJson(),
-
-      );
-
-
-      Get.back(); //hide loading
-      newEventDescTec.clear();
-      newEventTitleTec.clear();
-    }catch  (err){
-      print('## cant create event  : $err');
-    }
-  }
-
-  ///clubs
-  refreshClubs() async {
-    allClubs = await getAlldocsModelsFromFb<Club>(
-        true, clubsColl, (json) => Club.fromJson(json),
-        localKey: '');
-    for (Club club in allClubs) {
-      if (club.members.contains(cUser.id)) {
-        // user is in this club
-        myClubs.add(club);
-      } else {
-        // user is NOT in this club
-        otherClubs.add(club);
-      }
-    }
-    if(!cUser.isAdmin){
-      selectedClubs = myClubs;
-    }else{
-      selectedClubs = allClubs;
-
-    }
-  }
-  addClubDialog() {
-    return AlertDialog(
-      backgroundColor: dialogBgCol,
-      title: Text('Add New Event',
-        style: TextStyle(
-          color: dialogTitleCol,
-        ),),
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.all(
-          Radius.circular(12.0),
-        ),
-      ),
-      content: SingleChildScrollView(
-        scrollDirection: Axis.vertical,
-
-        child: Form(
-          key: addClubKey,
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.end,
-            children: [
-              SizedBox(height: 20,),
-
-              /// components
-
-              customTextField(
-                textInputType: TextInputType.number,
-                controller: newClubNameTec,
-                labelText: 'Name'.tr,
-                hintText: ''.tr,
-                icon: Icons.title,
-                validator: (value) {
-                  if (value!.isEmpty) {
-                    return "name can't be empty".tr;
-                  }
-
-
-                  return null;
-
-                },
-              ),
-              SizedBox(height: 18,),
-              customTextField(
-                textInputType: TextInputType.number,
-                controller: newClubDescTec,
-                labelText: 'Description'.tr,
-                hintText: ''.tr,
-                icon: Icons.description,
-                validator: (value) {
-
-                  return null;
-
-                },
-              ),
-              SizedBox(height: 18,),
-
-
-
-
-
-
-              /// buttons
-              Padding(
-                padding: EdgeInsets.symmetric(vertical: 15.0),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    //cancel
-                    TextButton(
-                      style: borderBtnStyle(),
-                      onPressed: () {
-                        Get.back();
-                      },
-                      child: Text(
-                        "Cancel".tr,
-                        style: TextStyle(color: dialogBtnCancelTextCol),
-                      ),
-                    ),
-                    //add
-                    TextButton(
-                      style: filledBtnStyle(),
-                      onPressed: () async {
-                        if(addEventKey.currentState!.validate()){
-                          addClubToDB();
-                        }
-                      },
-                      child: Text(
-                        "Add".tr,
-                        style: TextStyle(color: dialogBtnOkTextCol ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
   addClubToDB() async {
     Club newClub = Club(
       name: newClubNameTec.text,
@@ -491,6 +433,7 @@ class LayoutCtr extends GetxController {
       Get.back(); //hide loading
       newClubDescTec.clear();
       newClubNameTec.clear();
+      refreshClubs();
     }catch  (err){
       print('## cant create club  : $err');
     }
@@ -498,22 +441,62 @@ class LayoutCtr extends GetxController {
   openClub(){
     Get.to(()=>ClubDetails());
   }
+  Future<bool> alreadySentReq() async {
 
+    QuerySnapshot querySnapshot = await requestsColl
+        .where('studentID', isEqualTo: cUser.id)  // Check for the field 'studentID' with value '123'
+        .where('clubToJoinID', isEqualTo: selectedClub.id)  // Check for the field 'clubToJoinID' with value '456'
+        .get();
+
+    // Check if there are any documents that match the conditions
+    if (querySnapshot.docs.isNotEmpty) {
+      print('Document found with specified conditions');
+
+      return true;
+      // You can access the documents here and process them further
+      for (var doc in querySnapshot.docs) {
+        print('Document ID: ${doc.id}');
+        print('Document data: ${doc.data()}');
+      }
+    } else {
+      print('No document found with specified conditions');
+      return false;
+
+    }
+  }
 /// req
-  refreshRequests() async {
+  Future<void> refreshRequests() async {
     allRequests = await getAlldocsModelsFromFb<JoinRequest>(
         true, requestsColl, (json) => JoinRequest.fromJson(json),
         localKey: '');
+    update();
   }
   addRequest()async{
+    if(myClubs.contains(selectedClub.id)){
+      showTos('You are already a member in this club',color: Colors.black87);
+      return;
+    }
 
-    bool accept = await showNoHeader(txt: 'are you sure you want to request to join "${selectedClub.name}" ?');
-    if(!accept) return;
+    if(await alreadySentReq()){
+      showTos('You already sent a join request... Please wait for approvement',color: Colors.black87);
+      return;
+    }
+
+    bool accept = false;
+     accept = await showNoHeader(txt: 'are you sure you want to request to join "${selectedClub.name}" ?',btnOkText: 'Send Request');
+    if(!accept) {
+      return;
+    }
+
+
     JoinRequest newReq = JoinRequest(
       clubToJoinID: selectedClub.id,
       clubToJoinName: selectedClub.name,
       studentID: cUser.id,
       studentName: cUser.name,
+      date: todayToString(showHoursNminutes: true),
+
+
     );
     try{
       String specificID = Uuid().v1();
@@ -524,6 +507,7 @@ class LayoutCtr extends GetxController {
 
       );
       Get.back(); //hide loading
+      showTos('Your join request has been sent!',color: Colors.green);
 
     }catch  (err){
       print('## cant create request  : $err');
@@ -534,21 +518,194 @@ class LayoutCtr extends GetxController {
     // add user id to club members List of members IDs
     deleteDoc(docID: req.id,coll: requestsColl,success: (){//delete the request
       addElementsToList([req.studentID],'members',req.clubToJoinID,clubsCollName,canAddExistingElements: false);
+      refreshThisClub();
     });
   }
   removeFromClub(ScUser usr) async {
-    bool accept = await showNoHeader(txt: 'are you sure you want to remove ${usr.name} from ${selectedClub.name} club ?');
+    bool accept = await showNoHeader(txt: 'are you sure you want to remove ${usr.name} from ${selectedClub.name} club ?',btnOkText: 'Remove');
     if(!accept) return;
     // add user id to club members List of members IDs
-      removeElementsFromList([usr.id],'members',selectedClub.id,clubsCollName);
+      removeElementsFromList([usr.id],'members',selectedClub.id,clubsCollName).then((value) {
+        refreshThisClub();
+
+      });
 
   }
 
   declineReq(JoinRequest req){
     deleteDoc(docID: req.id,coll: requestsColl,success: (){
+      refreshThisClub();
 
     });
   }
 
 
+}
+
+
+class AddEvDia extends StatefulWidget {
+  const AddEvDia({super.key});
+
+  @override
+  State<AddEvDia> createState() => _AddEvDiaState();
+}
+class _AddEvDiaState extends State<AddEvDia> {
+  @override
+  Widget build(BuildContext context) {
+
+    return GetBuilder<LayoutCtr>(
+
+        builder: (ctr) => SingleChildScrollView(
+          scrollDirection: Axis.vertical,
+
+          child: Form(
+            key: layCtr.addEventKey,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                SizedBox(height: 20,),
+
+                /// title
+
+                customTextField(
+                  textInputType: TextInputType.text,
+                  controller: layCtr.newEventTitleTec,
+                  labelText: 'Title'.tr,
+                  hintText: ''.tr,
+                  icon: Icons.title,
+                  validator: (value) {
+                    if (value!.isEmpty) {
+                      return "title can't be empty".tr;
+                    }
+
+
+                    return null;
+
+                  },
+                ),
+                SizedBox(height: 18,),
+                customTextField(
+                  textInputType: TextInputType.text,
+                  controller: layCtr.newEventDescTec,
+                  labelText: 'Description'.tr,
+                  hintText: ''.tr,
+                  icon: Icons.description,
+                  validator: (value) {
+
+                    return null;
+
+                  },
+                ),
+                SizedBox(height: 18,),
+
+                /// image
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    //add image
+                    ButtonTheme(
+                      buttonColor: dialogBtnOkTextCol,
+                      //minWidth: 100.w  / 9,
+                      child: ElevatedButton(
+                        style: filledBtnStyle(color: dialogBtnOkCol.withOpacity(0.7)),
+                        onPressed: () async {
+                          PickedFile img = await showImageChoiceDialog();
+                          layCtr.updateImage(img);
+                        },
+                        child: Text('Add Image'.tr),
+                      ),
+                    ),
+
+                    //image_display
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 0.0),
+                      child: SizedBox(
+                        child: Stack(
+                          children: [
+                            Container(
+                              padding: EdgeInsets.all(2),
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(13),
+                                border: Border.all(
+                                  color: primaryColor,
+                                  width: 2,
+                                ),
+                              ),
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.circular(9),
+                                child: SizedBox(
+                                  width: 23.w ,
+                                  height: 15.w,
+                                  //size: Size.fromRadius(30),
+                                  child: layCtr.newItemImage != null
+                                      ? Image.file(
+                                    File(layCtr.newItemImage!.path),
+                                    fit: BoxFit.cover,
+                                  )
+                                      : Container(),
+                                ),
+                              ),
+                            ),
+
+                            ///delete
+                            if (layCtr.newItemImage != null)
+                              Positioned(
+                                top: -11,
+                                right: -11,
+                                child: IconButton(
+                                    icon: const Icon(Icons.close),
+                                    color: Colors.grey,
+                                    splashRadius: 1,
+                                    onPressed: () {
+                                      layCtr.deleteImage();
+                                    }),
+                              ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+
+
+
+
+                /// buttons
+                Padding(
+                  padding: EdgeInsets.symmetric(vertical: 15.0),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      //cancel
+                      TextButton(
+                        style: borderBtnStyle(),
+                        onPressed: () {
+                          Get.back();
+                        },
+                        child: Text(
+                          "Cancel".tr,
+                          style: TextStyle(color: dialogBtnCancelTextCol),
+                        ),
+                      ),
+                      //add
+                      TextButton(
+                        style: filledBtnStyle(),
+                        onPressed: () async {
+                          if(layCtr.addEventKey.currentState!.validate()){
+                            layCtr.addEventToDB();
+                          }
+                        },
+                        child: Text(
+                          "Add".tr,
+                          style: TextStyle(color: dialogBtnOkTextCol ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ));
+  }
 }

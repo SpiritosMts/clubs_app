@@ -52,7 +52,7 @@ class _MyAppState extends State<MyApp> {
           return GetMaterialApp(
             navigatorKey: navigatorKey,
             debugShowCheckedModeBanner: false,
-            title: 'EcoPoint',
+            title: 'Clubs',
 
             themeMode: ThemeMode.light,
             //light

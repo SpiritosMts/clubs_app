@@ -41,7 +41,7 @@ class _UsersListState extends State<UsersList> {
                       itemCount: layCtr.allUsers.length,
                       itemBuilder: (BuildContext context, int index) {
                         ScUser usr = (layCtr.allUsers[index]);
-                        return userCard(usr, index,tappable: true);
+                        return userCard(usr, index,tappable: true,canDelete: false);
                        }
                        ):Center(child: Text('No Users to show',style: TextStyle(fontSize: 16)),),
                 ),

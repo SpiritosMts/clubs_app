@@ -228,14 +228,7 @@ printJson(json) {
 
 
 
-//textFields
-fieldFocusChange(BuildContext context, FocusNode currentFocus, FocusNode nextFocus) {
-  currentFocus.unfocus();
-  FocusScope.of(context).requestFocus(nextFocus);
-}
-fieldUnfocusAll() {
-  FocusManager.instance.primaryFocus?.unfocus();
-}
+
 
 
 
@@ -327,38 +320,6 @@ String todayToString({bool showDay = false, bool showHoursNminutes = false, bool
 
 
 
-
-
-//prefs load-save
-Future<bool> savePrefsList<T>(String key, List<T> list) async {
-
-  // print('## saving local <$key> list ...');
-
-  List<String> stringList = list.map((item) => json.encode(item)).toList();
-  print('## saved local <$key> list  (${stringList.length})');
-  // if(key=='productsList')printJson((list[0] as Product).toJson());
-
-  return await sharedPrefs!.setStringList(cUser.id+key, stringList);
-}
-Future<List<T>> loadPrefsList<T>(String key, T Function(Map<String, dynamic>) fromJson) async {
-  //print('## loading local <$key> ...');
-
-  List<T> loadedList = [];
-
-  List<String>? stringList = sharedPrefs!.getStringList(cUser.id+key);
-  if (stringList != null) {
-    loadedList =  stringList.map((stringItem) => fromJson(json.decode(stringItem))).toList();
-    //if(key=='productsList')printJson((loadedList[0] as Product).toJson());
-
-    //print('## loaded local <$key> list  (${stringList.length})');
-
-  } else {
-    print('## prefs key = <${cUser.id + key}> dont exist in prefs');
-
-  }
-  return loadedList;
-
-}
 
 
 
@@ -532,88 +493,7 @@ showWarning({String? txt, Function()? btnOkPress}) {
     //btnOkIcon: Icons.check_circle,
   ).show();
 }
-showAlarm({int? alarmID,String? name}) {
-  return AwesomeDialog(
 
-    dialogBackgroundColor: dialogBgCol,
-    width: awesomeDialogWidth,
-
-    autoDismiss: true,
-    context: navigatorKey.currentContext!,
-    dismissOnBackKeyPress: false,
-    headerAnimationLoop: true,
-    dismissOnTouchOutside: false,
-    animType: AnimType.scale,
-    dialogType: DialogType.warning,
-    //showCloseIcon: true,
-    //title: 'Success'.tr,
-
-    descTextStyle: GoogleFonts.almarai(
-      height: 1.8,
-      textStyle: const TextStyle(fontSize: 14),
-    ),
-    btnOkColor: Color(0xFFFEB800),
-    //desc: 'You are in danger',
-    btnOkText: 'Stop'.tr,
-
-    body: AnimatedTextKit(
-      animatedTexts: [
-        TypewriterAnimatedText('${authCtr.cUser.role == 'patient' ? 'You are': '${name} is'} in danger'.tr,
-            textStyle: GoogleFonts.indieFlower(
-              textStyle:  TextStyle(
-                  fontSize: 21,
-                  color: accentColor0,
-                  fontWeight: FontWeight.w800
-              ),
-            ),
-            speed: const Duration(
-              milliseconds: 80,
-            )),
-      ],
-      isRepeatingAnimation: true,
-      totalRepeatCount: 40,
-    ),
-    btnOkOnPress: () {
-      Alarm.stop(alarmID!).then((_) {
-        Get.back();
-      });
-    },
-
-  ).show();
-}
-
-showChangeProp({title,body, Function()? btnOkPress,icon}) {
-  return AwesomeDialog(
-    dialogBackgroundColor: primaryColor,
-    width: awesomeDialogWidth,
-
-    customHeader: icon,
-    autoDismiss: false  ,
-    context: navigatorKey.currentContext!,
-
-    showCloseIcon: false,
-    dismissOnTouchOutside: true,
-    animType: AnimType.scale,
-    headerAnimationLoop: false,
-    dismissOnBackKeyPress: true,
-
-    btnCancelOnPress: (){
-      Get.back();
-    },
-    dialogType: DialogType.noHeader,
-    title: title,
-    titleTextStyle: TextStyle(
-        color: Colors.blueAccent
-    ),
-    body: body,
-    //desc: 'Your email is not verified\nVerify now?'.tr,
-    btnOkText: 'Change'.tr,
-    btnCancelText: 'cancel'.tr,
-    btnCancelColor: Colors.grey,
-
-  );
-
-}
 Future<bool> showNoHeader({String? txt, String? btnOkText, Color btnOkColor = errorColor, IconData? icon}) async {
   bool shouldDelete = false;
 

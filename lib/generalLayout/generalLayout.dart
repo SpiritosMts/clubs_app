@@ -41,55 +41,59 @@ class _GeneralLayoutState extends State<GeneralLayout> {
   }
 
   List<PersistentBottomNavBarItem> _navBarsItems() {
-    return [
+    return cUser.isAdmin? [
       PersistentBottomNavBarItem(
-        icon: Icon(Icons.home),
-        title: ("Home"),
+        icon: Icon(Icons.groups),
+        title: ("All clubs"),
 
         activeColorPrimary: navBarActive,
         inactiveColorPrimary: navBarDesactive,
       ),
       PersistentBottomNavBarItem(
-        icon: Icon(Icons.category),
-        title: ("Materials".tr),
+        icon: Icon(Icons.group_add_outlined),
+        title: ("Requests".tr),
         activeColorPrimary: navBarActive,
         inactiveColorPrimary: navBarDesactive,
       ),
       PersistentBottomNavBarItem(
-        icon: Icon(Icons.location_on_sharp),
-        title: ("Request".tr),
+        icon: Icon(Icons.supervised_user_circle),
+        title: ("All Users".tr),
+        activeColorPrimary: navBarActive,
+        inactiveColorPrimary: navBarDesactive,
+      ),
+
+    ]:[
+      PersistentBottomNavBarItem(
+        icon: Icon(Icons.groups),
+        title: ("My Clubs"),
+
         activeColorPrimary: navBarActive,
         inactiveColorPrimary: navBarDesactive,
       ),
       PersistentBottomNavBarItem(
-        icon: Icon(Icons.attach_money),
-        title: ("Transfer".tr),
+        icon: Icon(Icons.group_outlined),
+        title: ("Other Clubs".tr),
         activeColorPrimary: navBarActive,
         inactiveColorPrimary: navBarDesactive,
       ),
-      PersistentBottomNavBarItem(
-        icon: Icon(Icons.settings),
-        title: ("Settings"),
-        activeColorPrimary: navBarActive,
-        inactiveColorPrimary: navBarDesactive,
-      ),
+
     ];
   }
 
   @override
   Widget build(BuildContext context) {
     return GetBuilder<LayoutCtr>(
-        initState: (_) {
-        },
+        initState: (_) {},
         dispose: (_) {},
       builder: (_) {
         return Scaffold(
           appBar: AppBar(
             backgroundColor: appBarBgColor,
             title: Text(
-              layCtr.appBarText.tr,style: TextStyle(
-              fontWeight: FontWeight.w500,
-              color: appBarTitleColor,
+              layCtr.appBarText,
+              style: TextStyle(
+                fontWeight: FontWeight.w500,
+                color: appBarTitleColor,
              ),
             ),
             bottom: appBarUnderline(),

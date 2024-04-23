@@ -96,12 +96,12 @@ class AuthController extends GetxController {
       //print('## gloabal loggedIn <${cUser.isLoggedIn }>  ');
       //print('## local loggedIn <${localLogin}>  ');
 
-      if(updateIsLoggedIn)   updateFieldInFirestore(usersColl, cUser.id, 'isLoggedIn', true, addSuccess: () {
-        sharedPrefs!.setBool('localLogin',true);//this has priority
-      });
+
       if (cUser.pwd != enteredPwd && enteredPwd!='') {//if pwd changed
         updateFieldInFirestore(usersColl, cUser.id, 'pwd', enteredPwd, addSuccess: () {});
       }
+      await fcmCtr.streamUserToken();//get & start token streaming
+
       goHome();
 
     }
@@ -249,7 +249,6 @@ class AuthController extends GetxController {
       if (userDoc.exists) {
         var userData = userDoc.data() as Map<String, dynamic>; // Explicit casting
         cUser = ScUser.fromJson(userData);
-        layCtr.refreshClubs();
         printJson(cUser.toJson());
       } else {
         print('## user doc with email < $userEmail >  dont exist ');
