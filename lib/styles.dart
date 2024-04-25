@@ -308,7 +308,7 @@ Widget appNameText() {
     '${appDisplayName}',
     textAlign: TextAlign.center,
     style: GoogleFonts.indieFlower(
-      textStyle: TextStyle(fontSize: 33, color: orangeCol, fontWeight: FontWeight.w700, letterSpacing: 5),
+      textStyle: TextStyle(fontSize: 33, color: Color(0xFF006BFF), fontWeight: FontWeight.w700, letterSpacing: 5),
     ),
   );
 }

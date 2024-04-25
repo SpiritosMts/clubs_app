@@ -109,7 +109,7 @@ Future<void> updateDoc({required CollectionReference coll , required String docI
   await coll.doc(docID).get().then((DocumentSnapshot documentSnapshot) async {
     if (documentSnapshot.exists) {
       await coll.doc(docID).update(fieldsMap).then((value) async {
-        showSnack('doc updated'.tr);
+        //showSnack('doc updated'.tr);
         print('## doc updated');
         //Get.back();//cz it in dialog
       }).catchError((error) async {
@@ -213,28 +213,7 @@ Future<void> removeElementsFromList(List elements, String fieldName, String docI
 }
 
 
-clearCollection(CollectionReference coll) async {
-  var snapshots = await coll.get();
-  for (var doc in snapshots.docs) {
-    print('# delete doc<${doc.id}>');
-    await doc.reference.delete();
-  }
-}
 
-Future<List<String>> getDocumentsIDsByFieldName(String fieldName, String filedValue, CollectionReference coll) async {
-  QuerySnapshot snap = await coll
-      .where(fieldName, isEqualTo: filedValue) //condition
-      .get();
-
-  List<String> docsIDs = [];
-  final List<DocumentSnapshot> documentsFound = snap.docs;
-  for (var doc in documentsFound) {
-    docsIDs.add(doc.id);
-  }
-  print('## docs has [$fieldName=$filedValue] =>$docsIDs');
-
-  return docsIDs;
-}
 
 Future<List<DocumentSnapshot>> getDocumentsByColl(CollectionReference coll) async {
   List<DocumentSnapshot> documentsFound =[];
@@ -249,52 +228,9 @@ Future<List<DocumentSnapshot>> getDocumentsByColl(CollectionReference coll) asyn
   return documentsFound;
 }
 
-/// ////////////////// Get & Set 1 Field in FB //////////////////////////////////////////////////////////////////////////////////////////////////
-Future<void> updateFieldInFirestore( //use aawait with it
- CollectionReference coll,
-    String docId,
-    String fieldName,
-    dynamic fieldValue, {
-      Function()? addSuccess,
-    })async {
 
-  try {
 
-    await coll.doc(docId).update({
-      fieldName: fieldValue,
-    });
-    print('## Field updated successfully <${coll.path}/$docId/$fieldName> = <$fieldValue>');
-    if (addSuccess != null) addSuccess();
-  } catch (error) {
-    print('## Error updating field <${coll.path}/$docId/$fieldName> = <$fieldValue>  ///ERROR : $error ///');
-    throw Exception('## Exception ');
 
-  }
-
-}
-
-Future<dynamic> getFieldFromFirestore( CollectionReference coll, String docId, String fieldName) async {
-  try {
-    DocumentSnapshot snapshot = await coll.doc(docId).get();
-    if (snapshot.exists) {
-      dynamic docMap = snapshot.data() as Map<String, dynamic>;
-      dynamic fieldValue = docMap[fieldName];
-
-      if (fieldValue is int) {
-        return fieldValue.toDouble(); // Convert int to double
-      } else {
-        return fieldValue;
-      }
-    } else {
-      print('## Document not found <${coll.path}/$docId>');
-      return null;
-    }
-  } catch (error) {
-    print('## Error retrieving field <${coll.path}/$docId/$fieldName> : $error');
-    throw Exception('## Exception ');
-
-  }
-}
 
 /// //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -321,20 +257,7 @@ Future<List<T>> getAlldocsModelsFromFb<T>(bool online, CollectionReference coll,
   return models;
 }
 
-Future<List<DocumentSnapshot>> getDocumentsByIDs(
-  CollectionReference coll, {
-  List<String> IDs = const [],
-}) async {
-  // List userStoresIDs = authCtr.cUser.stores!;
-  List userStoresIDs = [];
-  QuerySnapshot snap = (IDs != [] ? await coll.where('id', whereIn: IDs).get() : await coll.get());
 
-  final documentsMap = snap.docs;
-
-  print('## collection:<${coll.path}> docs length =(${documentsMap.length})');
-
-  return documentsMap;
-}
 
 Future<bool> checkDocExist(String docID, coll) async {
   var docSnapshot = await coll.doc(docID).get();
@@ -347,17 +270,7 @@ Future<bool> checkDocExist(String docID, coll) async {
   return docSnapshot.exists;
 }
 
-/// Check If Document Exists
-Future<bool> checkIfDocExists(String collName, String docId) async {
-  try {
-    // Get reference to Firestore collection
-    var collectionRef = FirebaseFirestore.instance.collection(collName);
-    var doc = await collectionRef.doc(docId).get();
-    return doc.exists;
-  } catch (e) {
-    throw e;
-  }
-}
+
 
 
 
@@ -377,27 +290,6 @@ Future<void> deleteDoc({Function()? success, required String docID,required Coll
   });
 
 }
-
-deleteUserFromAuth(email, pwd) async {
-  //auth user to delete
-  await firebaseAuth
-      .signInWithEmailAndPassword(
-    email: email,
-    password: pwd,
-  )
-      .then((value) async {
-    print('## account: <${authCurrUser!.email}> deleted');
-    //delete user
-    authCurrUser!.delete();
-    //signIn with admin
-    await firebaseAuth.signInWithEmailAndPassword(
-      email: authCtr.cUser.email!,
-      password: authCtr.cUser.pwd!,
-    );
-    print('## admin: <${authCurrUser!.email}> reSigned in');
-  });
-}
-
 
 
 void deleteFromMap({coll, docID, fieldMapName, String mapKeyToDelete ='', bool withBackDialog = false, String targetInvID ='', Function()? addSuccess,}) {
@@ -451,44 +343,6 @@ void deleteFromMap({coll, docID, fieldMapName, String mapKeyToDelete ='', bool w
     print('## ERROR: FAILED to even get  ${coll}/$docID/ : $error');
   });
 }
-Map<String, dynamic>  deleteFromMapLocal({mapInitial, String mapKeyToDelete ='', String targetInvID ='', Function()? addSuccess,}) {
-
-  Map<String, dynamic> fieldMap = {};
-  //we need either targetInvID or mapKeyToDelete to delete item from map
-  if(targetInvID!='') print('## targetInvID = <$targetInvID> ');// delete map B in map A by ""value"" in map B,
-  if(mapKeyToDelete!='') print('## mapKeyToDelete = <$mapKeyToDelete>');// delete map B in map A by ""key"" of map B,
-
-  try {
-
-    fieldMap = mapInitial;
-    String keyToDelete = mapKeyToDelete;
-    //search map key depending on specific value
-    if (targetInvID != '') {
-      for (var entry in fieldMap.entries) {
-        if (entry.value['invID'] == targetInvID) {
-          keyToDelete = entry.key;
-        }
-      }
-    }
-
-    print('## key To Delete = ${keyToDelete} ');
-
-
-    if (fieldMap.containsKey(keyToDelete)) {
-      fieldMap.remove(keyToDelete);
-      if(addSuccess!= null) addSuccess();
-    } else {
-      print('## hisTr not found or already deleted');
-    }
-
-
-  }catch(error)  {
-    print('## ERROR: FAILED to remove key="$mapKeyToDelete" : $error');
-    throw Exception('## Exception ');
-
-  };
-  return fieldMap;
-}
 
 
 
@@ -519,86 +373,5 @@ Future<void> addToMap({coll, docID, fieldMapName, mapToAdd, Function()? addSucce
       print('## doc<$docID> dont exist');
     }
   });
-}
-
-Future<void> addToMap0({coll, docID, fieldMapName, mapToAdd, Function()? addSuccess, bool withBackDialog = false}) async {
-  coll.doc(docID).get().then((DocumentSnapshot documentSnapshot) async {
-    if (documentSnapshot.exists) {
-      dynamic fieldData = documentSnapshot.get(fieldMapName);
-
-      if (fieldData is Map<String, dynamic>) {
-        // Safe to proceed because the data is a map
-        Map<String, dynamic> fieldMap = fieldData;
-
-        // Add new item to the map
-        fieldMap[getLastIndex(fieldMap, afterLast: true)] = mapToAdd;
-
-        await coll.doc(docID).update({
-          '${fieldMapName}': fieldMap,
-        }).then((value) async {
-          if (withBackDialog) {
-            Get.back();
-          }
-          print('## item to fieldMap added');
-          if (addSuccess != null) {
-            addSuccess();
-          }
-        }).catchError((error) async {
-          print('## item to fieldMap FAILED to added');
-          showSnack(snapshotErrorMsg, color: Colors.black54);
-        });
-      } else {
-        // Handle the case where the data is not a map
-        print('Error: Expected a Map<String, dynamic> but found a different type');
-        // Optionally, you could raise an exception or take other actions here
-      }
-    } else {
-      print('## doc<$docID> does not exist');
-    }
-  });
-}
-
-
-/// //////////////////////////////////////// MANUAL CHNAGES TEST ////////////////////////////////////////////
-
-
-changeAllDocsManual() async {
-  String collectionName = 'invoices'; /// <<<<<<< changeable for test
-
-  CollectionReference collection = FirebaseFirestore.instance.collection(collectionName);
-  QuerySnapshot querySnapshot = await collection.get();
-
-  int i =1;
-
-  /// Loop through each document
-  for (QueryDocumentSnapshot doc in querySnapshot.docs) {
-    Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
-    bool conditionToAdd = !data.containsKey('deliveryMatFis') || !data.containsKey('index');
-    if(true){
-      print('## change ( $i )<${doc.id}>');
-      await collection.doc(doc.id).update({
-        'isBuy': false,
-        //'index': i.toString(),
-      });
-    }
-
-
-    i++;//last
-  }
-}
-
-Future<void> removeFieldFromAllDocs() async {
-  String collectionName = 'invoices'; /// <<<<<<< changeable for test
-
-  CollectionReference collection = FirebaseFirestore.instance.collection(collectionName);
-  QuerySnapshot querySnapshot = await collection.get();
-
-  for (QueryDocumentSnapshot doc in querySnapshot.docs) {
-
-
-    await collection.doc(doc.id).update({
-      //'matriculeFis': FieldValue.delete(),
-    });
-  }
 }
 

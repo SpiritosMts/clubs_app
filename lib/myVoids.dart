@@ -37,8 +37,7 @@ FirebaseAuth get firebaseAuth => FirebaseAuth.instance;
 var commaFormatter = NumberFormat('#,###,###');
 
 
-String currency = 'TND';
-String appDisplayName = 'Clubs';
+String appDisplayName = 'ClubVibe';
 
 String snapshotErrorMsg = 'check Connexion'.tr;
 
@@ -55,29 +54,6 @@ DateFormat dateFormatHM = DateFormat('dd-MM-yyyy HH:mm');
 DateFormat dateFormatHMS = DateFormat('dd-MM-yyyy HH:mm:ss');
 
 double awesomeDialogWidth =90.sp;
-
-int refreshVerifInSec =5;
-int introShowTimes =1;
-
-/// ******************************************************
-///prods
-const bool prdOnlineUpdate = true;
-bool prdOnlineAdd = prdOnlineUpdate;
-bool prdOnlineEdit = prdOnlineUpdate;//below
-// <add map(hisTr) to (sellHis, buyHis, ) [auto add inv]   |OR|   to (prodChanges,) [manual pen btn] >
-// <remove map(hisTr) from (sellHis, buyHis, ) [auto(rm inv), manual(x) ]    |OR|   from (prodChanges,) [manual(x)]>
-bool prdOnlineRemove = prdOnlineUpdate;
-///invs
-bool invOnlineAdd = false;
-bool invOnlineEdit = false;
-bool invOnlineRemove = false;
-///PrivateData
-bool treasuryOnlineEdit = false;
-bool indexInvOnlineEdit = true;
-
-///prefs
-bool saveToPrefs = false;
-bool invActive = false;
 
 
 
@@ -130,15 +106,6 @@ String getLastIndex(Map<String, dynamic> fieldMap, {String? cr,  bool afterLast 
   }
   return newItemIndex.toString();
 }
-Map<String, dynamic> addCaracterAtStartOfKeys(String caracter, Map<String, dynamic> originalMap){
-  Map<String, dynamic> modifiedMap = {};
-
-  originalMap.forEach((key, value) {
-    String modifiedKey = caracter + key;
-    modifiedMap[modifiedKey] = value;
-  });
-  return modifiedMap;
-}
 Map<String, dynamic> removeSubstringFromKeys(String substring, Map<String, dynamic> originalMap) {
   Map<String, dynamic> modifiedMap = {};
 
@@ -149,73 +116,8 @@ Map<String, dynamic> removeSubstringFromKeys(String substring, Map<String, dynam
 
   return modifiedMap;
 }
-List<double> sortDescending(List<double> inputList) {
-  List<double> sortedList = List.from(inputList); // Make a copy to avoid modifying the original list
-  sortedList.sort((a, b) => b.compareTo(a)); // Sorting in descending order
-  return sortedList;
-}
-List<int> sortDescendingInt(List<int> inputList) {
-  List<int> sortedList = List.from(inputList); // Make a copy to avoid modifying the original list
-  sortedList.sort((a, b) => b.compareTo(a)); // Sorting in descending order
-  return sortedList;
-}
-List<double> convertStringListToDoubleList(List<String> stringList) {
-  List<double> doubleList = [];
-  for (String stringValue in stringList) {
-    double doubleValue = double.tryParse(stringValue) ?? 0.0;
-    doubleList.add(doubleValue);
-  }
-  return doubleList;
-}
-double getDoubleMinValue(List<double> values) {
-  return values.reduce((currentMin, value) => value < currentMin ? value : currentMin);
-}
-double getDoubleMaxValue(List<double> values) {
-  return values.reduce((currentMax, value) => value > currentMax ? value : currentMax);
-}
 
 
-
-
-
-
-//numbers
-String formatNumberAfterComma2(double number) {
-  String numberString = number.toStringAsFixed(0); // Convert to a string without decimal digits
-
-  if (number == 0) {
-    return '0'; // Return '0' for zero value
-  }
-
-  // Handle negative numbers
-  bool isNegative = number < 0;
-  if (isNegative) {
-    numberString = numberString.substring(1); // Remove the negative sign
-  }
-
-  // Add comma separator from the right
-  String formattedNumber = '';
-  int count = 0;
-
-  for (int i = numberString.length - 1; i >= 0; i--) {
-    formattedNumber = numberString[i] + formattedNumber;
-    count++;
-    if (count == 3 && i > 0) {
-      formattedNumber = ',' + formattedNumber;
-      count = 0;
-    }
-  }
-
-  if (isNegative) {
-    formattedNumber = '-$formattedNumber'; // Add back the negative sign
-  }
-
-  if (number < 1000 && number > -1000) {
-    formattedNumber = '0,$formattedNumber';
-  }
-
-  return formattedNumber;
-}
 
 //json
 printJson(json) {
@@ -402,97 +304,6 @@ showLoading({required String text}) {
     desc: 'Please wait'.tr,
   ).show();
 }
-showFailed({String? faiText}) {
-  return AwesomeDialog(
-      dialogBackgroundColor: dialogBgCol,
-      width: awesomeDialogWidth,
-
-      autoDismiss: true,
-      context: navigatorKey.currentContext!,
-      dismissOnTouchOutside: false,
-      animType: AnimType.scale,
-      headerAnimationLoop: false,
-      dialogType: DialogType.error,
-      //showCloseIcon: true,
-      titleTextStyle: TextStyle(
-          color: dialogTitleCol
-      ),
-      title: 'Failure'.tr,
-      btnOkText: 'Ok'.tr,
-      descTextStyle: GoogleFonts.almarai(
-        height: 1.8,
-        textStyle: const TextStyle(fontSize: 14),
-      ),
-      desc: faiText,
-      btnOkOnPress: () {},
-      btnOkColor: Colors.red,
-      btnOkIcon: Icons.check_circle,
-      onDismissCallback: (type) {
-        debugPrint('Dialog Dissmiss from callback $type');
-      }).show();
-  ;
-}
-showSuccess({String? sucText, Function()? btnOkPress}) {
-  return AwesomeDialog(
-    dialogBackgroundColor: dialogBgCol,
-    width: awesomeDialogWidth,
-
-    autoDismiss: true,
-    context: navigatorKey.currentContext!,
-    dismissOnBackKeyPress: false,
-    headerAnimationLoop: false,
-    dismissOnTouchOutside: false,
-    animType: AnimType.leftSlide,
-    dialogType: DialogType.success,
-    //showCloseIcon: true,
-    //title: 'Success'.tr,
-
-    titleTextStyle: TextStyle(color: dialogTitleCol),
-    descTextStyle: TextStyle(fontSize: 15.sp,color: normalTextCol),
-    desc: sucText,
-    btnOkText: 'Ok'.tr,
-
-    btnOkOnPress: () {
-      btnOkPress!();
-    },
-    // onDissmissCallback: (type) {
-    //   debugPrint('## Dialog Dissmiss from callback $type');
-    // },
-    //btnOkIcon: Icons.check_circle,
-  ).show();
-}
-showWarning({String? txt, Function()? btnOkPress}) {
-  return AwesomeDialog(
-    dialogBackgroundColor: dialogBgCol,
-    width: awesomeDialogWidth,
-
-    autoDismiss: true,
-    context: navigatorKey.currentContext!,
-    dismissOnBackKeyPress: false,
-    headerAnimationLoop: false,
-    dismissOnTouchOutside: false,
-    animType: AnimType.scale,
-    dialogType: DialogType.warning,
-    //showCloseIcon: true,
-    //title: 'Success'.tr,
-
-    descTextStyle: GoogleFonts.almarai(
-      height: 1.8,
-      textStyle: const TextStyle(fontSize: 14),
-    ),
-    btnOkColor: Color(0xFFFEB800),
-    desc: txt,
-    btnOkText: 'Ok'.tr,
-
-    btnOkOnPress: () {
-      btnOkPress!();
-    },
-    // onDissmissCallback: (type) {
-    //   debugPrint('## Dialog Dissmiss from callback $type');
-    // },
-    //btnOkIcon: Icons.check_circle,
-  ).show();
-}
 
 Future<bool> showNoHeader({String? txt, String? btnOkText, Color btnOkColor = errorColor, IconData? icon}) async {
   bool shouldDelete = false;
@@ -559,18 +370,7 @@ Future<bool> showNoHeader({String? txt, String? btnOkText, Color btnOkColor = er
   return shouldDelete;
 }
 
-//snackbars
-showGetSnackbar(String title,String desc,{Color? color}){
-  Get.snackbar(
 
-    title,
-    desc,
-    duration: Duration(seconds: 2),
-    snackPosition: SnackPosition.BOTTOM,
-    backgroundColor:color?? Colors.redAccent.withOpacity(0.8),
-    colorText: Colors.white,
-  );
-}
 showTos(txt, {Color color = Colors.black87, bool withPrint = false}) async {
   Fluttertoast.showToast(
       msg: txt,

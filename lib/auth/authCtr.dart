@@ -97,10 +97,6 @@ class AuthController extends GetxController {
       //print('## local loggedIn <${localLogin}>  ');
 
 
-      if (cUser.pwd != enteredPwd && enteredPwd!='') {//if pwd changed
-        updateFieldInFirestore(usersColl, cUser.id, 'pwd', enteredPwd, addSuccess: () {});
-      }
-      await fcmCtr.streamUserToken();//get & start token streaming
 
       goHome();
 

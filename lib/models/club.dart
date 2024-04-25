@@ -8,6 +8,7 @@ class Club {
   String createdTime;
   List<String> members;
   List<ClubEvent> events;
+  Map<String,dynamic> messages;
 
   Club({
     this.name = '',
@@ -17,6 +18,7 @@ class Club {
     this.createdTime = '',
     this.members = const [],
     this.events = const [],
+    this.messages = const {},
   });
 
   // Convert Club object to JSON
@@ -36,6 +38,7 @@ class Club {
       'logoUrl': logoUrl,
       'createdTime': createdTime,
       'members': members,
+      'messages': messages,
       'events': eventsToMap,
     };
   }
@@ -59,6 +62,7 @@ class Club {
       logoUrl: json['logoUrl'] ?? '',
       createdTime: json['createdTime'] ?? '',
       members: List<String>.from(json['members'] ?? []),
+      messages: Map<String, dynamic>.from(json['messages'] ?? {}),
       events: eventsFromMap,
     );
   }

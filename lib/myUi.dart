@@ -4,15 +4,17 @@ import 'package:clubs_app/bindings.dart';
 import 'package:clubs_app/models/request.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
-
-
+import 'package:cached_network_image/cached_network_image.dart'; // Optional
+import 'package:shimmer/shimmer.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:random_avatar/random_avatar.dart';
 import 'package:responsive_sizer/responsive_sizer.dart';
+import 'package:badges/badges.dart' as badges;
 
+import 'main.dart';
 import 'models/club.dart';
 import 'models/event.dart';
 import 'models/user.dart';
@@ -163,14 +165,18 @@ userCard(ScUser user,i,{bool tappable = true,bool canDelete = true,    Function(
                 ],
               ),
             ),
-           if(canDelete) Positioned(
+           if(canDelete && cUser.isAdmin) Positioned(
               top: -4,
               right: -4,
               child: IconButton(
                 icon: const Icon(Icons.close),
                 color: Colors.redAccent,
                 splashRadius: 1,
-                onPressed: () {
+                onPressed: () async {
+                 bool accept = await showNoHeader(txt: 'are you sure you want to remove this user from the club');
+                  if(!accept) {
+                    return;
+                  }
                   layCtr.removeFromClub(user);
                 },
               ),
@@ -188,10 +194,16 @@ clubCard(Club clb,i,{bool tappable = true,    Function()? btnOnPress,}){
   double bottomProdName = 9;
   double bottomProdBuy = 6;
 
+  int seenMessages = sharedPrefs!.getInt('${clb.id}')??0;
+  int clubMessages = clb.messages.length;
+  int badgeCount = clubMessages-seenMessages;
 
 
   return GestureDetector(
 
+    onLongPress: (){
+      print('## messages = ${clubMessages} // seenMessages = $seenMessages');
+    },
     onTap: () {
       if(tappable){
         layCtr.selectClub(clb.id);
@@ -211,10 +223,10 @@ clubCard(Club clb,i,{bool tappable = true,    Function()? btnOnPress,}){
     },
     child: Container(
       // padding :  EdgeInsets.symmetric(horizontal: horizontalPadd,vertical: verticalPadd),
-      child: Card(
+      child:   Card(
         elevation: 5,
         shape: RoundedRectangleBorder(
-            side: BorderSide(color: productBorderCol, width: 1.5), borderRadius: BorderRadius.circular(13)),
+            side: BorderSide(color: Colors.transparent, width: 1.5), borderRadius: BorderRadius.circular(13)),
         color: productCardColor,
         child: Stack(
           children: [
@@ -314,6 +326,15 @@ clubCard(Club clb,i,{bool tappable = true,    Function()? btnOnPress,}){
                   ),
 
                 ],
+              ),
+            ),
+            if(badgeCount > 0 && !cUser.isAdmin ) Positioned(
+              top: 0,
+              left: 0,
+              child: Image.asset(
+                'assets/images/msg.png', // Your badge asset image path
+                width: 19, // Width of the badge
+                height: 19, // Height of the badge
               ),
             ),
           ],
@@ -463,17 +484,14 @@ requestCard(JoinRequest req,i,{bool tappable = true,    Function()? btnOnPress,}
 
 }
 
-eventCard(ClubEvent ev,i,{bool tappable = true,    Function()? btnOnPress,}){
+eventCard(ClubEvent ev,i,{bool tappable = true, Function()? btnOnPress,}){
   double bottomProdName = 9;
   double bottomProdBuy = 6;
 
-
   return GestureDetector(
-
     onTap: () {
       if(tappable){
         btnOnPress!();
-
       }
     },
     child: Container(
@@ -496,7 +514,7 @@ eventCard(ClubEvent ev,i,{bool tappable = true,    Function()? btnOnPress,}){
 
                   Padding(
                     padding: const EdgeInsets.all(8.0),
-                    child: Container(child: ev.imageUrl!=''?  Image.network(
+                    child: Container(child: ev.imageUrl!=''? Image.network(
                       ev.imageUrl,
                       fit: BoxFit.cover,
                       width: double.infinity,
@@ -563,14 +581,19 @@ eventCard(ClubEvent ev,i,{bool tappable = true,    Function()? btnOnPress,}){
               ),
 
             ),
-            if(true) Positioned(
+            if(cUser.isAdmin) Positioned(
               top: -4,
               right: -4,
               child: IconButton(
                 icon: const Icon(Icons.close),
                 color: Colors.redAccent,
                 splashRadius: 1,
-                onPressed: () {
+                onPressed: () async {
+                  bool accept = await showNoHeader(txt: 'are you sure you want to remove this event ');
+                  if(!accept) {
+                    return;
+                  }
+
                   layCtr.deleteEvent(ev.id).then((value) {
                     layCtr.refreshThisClub();
                   });
@@ -582,8 +605,6 @@ eventCard(ClubEvent ev,i,{bool tappable = true,    Function()? btnOnPress,}){
       ),
     ),
   );
-
-
 
 }
 
@@ -887,29 +908,6 @@ Widget customButton(
   );
 }
 
-Widget prop(title, prop, {Color color = Colors.white, double spaceBetween = 15.0, String extraTxt = ''}) {
-  return Padding(
-    padding: EdgeInsets.only(bottom: spaceBetween),
-    child: Row(
-      children: [
-        Text(
-          '$title',
-          style: TextStyle(fontWeight: FontWeight.w600, fontSize: 19, color: color),
-        ),
-        SizedBox(width: 8),
-        Text(
-          '$prop',
-          style: TextStyle(fontWeight: FontWeight.w400, fontSize: 16, color: Colors.white70),
-        ),
-        SizedBox(width: 5),
-        Text(
-          '$extraTxt',
-          style: TextStyle(fontWeight: FontWeight.w400, fontSize: 11, color: Colors.white),
-        ),
-      ],
-    ),
-  );
-}
 
 Widget animatedText(String txt, double textSize, int speed) {
   return SizedBox(

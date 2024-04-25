@@ -8,13 +8,16 @@ import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:random_avatar/random_avatar.dart';
 import 'package:responsive_sizer/responsive_sizer.dart';
+import 'package:badges/badges.dart' as badges;
 
 import '../bindings.dart';
+import '../main.dart';
 import '../models/event.dart';
 import '../models/user.dart';
 import '../myUi.dart';
 import '../myVoids.dart';
 import '../styles.dart';
+import 'messages.dart';
 
 
 class ClubDetails extends StatefulWidget {
@@ -24,10 +27,28 @@ class ClubDetails extends StatefulWidget {
   State<ClubDetails> createState() => _ClubDetailsState();
 }
 
-class _ClubDetailsState extends State<ClubDetails> {
+class _ClubDetailsState extends State<ClubDetails> with TickerProviderStateMixin{
   @override
   Widget build(BuildContext context) {
     return GetBuilder<LayoutCtr>(
+        initState: (_){
+           Future.delayed(const Duration(milliseconds: 400), () {
+
+             print('## clubDetails initState "start streaming" ');
+             layCtr.streamingDoc();
+
+           });
+
+
+        },
+        dispose: (_){
+          print('## clubDetails dispose "stop streaming" ');
+          Future.delayed(const Duration(milliseconds: 50), () {
+            layCtr.      refreshClubs();
+            layCtr.stopStreamingDoc();
+          });
+
+        },
       builder: (_) {
         return Scaffold(
           appBar: AppBar(
@@ -47,7 +68,9 @@ class _ClubDetailsState extends State<ClubDetails> {
               },
             ) ,
             actions: [
-             if(cUser.isAdmin) ...[GestureDetector(
+             if(cUser.isAdmin) ...[
+               //refresh
+               GestureDetector(
                onTap: () {
                  layCtr.refreshThisClub();
                },
@@ -60,7 +83,9 @@ class _ClubDetailsState extends State<ClubDetails> {
                    ),
                  ),
                ),
-             ),GestureDetector(
+             ),
+               //add event
+               GestureDetector(
                onTap: () {
                  showAnimDialog(layCtr.addEventDialog());
                },
@@ -73,7 +98,75 @@ class _ClubDetailsState extends State<ClubDetails> {
                    ),
                  ),
                ),
-             )],
+             ),
+               //messages
+               GestureDetector(
+                 onTap: () {
+                   Get.to(()=>ClubMessages());
+                 },
+                 child: Padding(
+                   padding: const EdgeInsets.symmetric(horizontal: 11.0),
+                   child: Center(
+                     child: Icon(
+                       Icons.message,
+                       color: appBarButtonsCol,
+                     ),
+                   ),
+                 ),
+               ),
+             ],
+             if(!cUser.isAdmin) ...[
+                //refresh
+                GestureDetector(
+                  onTap: () {
+                    layCtr.refreshThisClub();
+                  },
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 11.0),
+                    child: Center(
+                      child: Icon(
+                        Icons.refresh,
+                        color: appBarButtonsCol,
+                      ),
+                    ),
+                  ),
+                ),
+                //messages
+               if(true) badges.Badge(
+                  showBadge: layCtr.badgeCount > 0 ? true:false,
+                  badgeStyle: badges.BadgeStyle(),
+                  badgeContent: Text(layCtr.badgeCount.toString(),style: TextStyle(color: Colors.white)),
+                  position: badges.BadgePosition.custom(top: 0),
+                  child: GestureDetector(
+                    onTap: () {
+                      Get.to(()=>ClubMessages());
+                    },
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 11.0),
+                      child: Center(
+                        child: Icon(
+                          Icons.message,
+                          color: appBarButtonsCol,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              if(false) GestureDetector(
+                 onTap: () {
+                   Get.to(()=>ClubMessages());
+                 },
+                 child: Padding(
+                   padding: const EdgeInsets.symmetric(horizontal: 11.0),
+                   child: Center(
+                     child: Icon(
+                       Icons.message,
+                       color: appBarButtonsCol,
+                     ),
+                   ),
+                 ),
+               )
+              ],
             ],
           ),
 
@@ -204,7 +297,6 @@ maxLines: 5,
                         left: 0,
                       ),
                       //itemExtent: 100,// card height
-                      reverse: true,
                       itemCount: layCtr.selectedEvents.length,
                       itemBuilder: (BuildContext context, int index) {
                         ClubEvent ev = (layCtr.selectedEvents[index]);

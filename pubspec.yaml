@@ -70,10 +70,11 @@ dependencies:
   flutter_typeahead: ^4.0.0 # for textField in appbar
   responsive_sizer: ^3.1.0
   tutorial_coach_mark: ^1.2.6
-  cached_network_image: any #  with downloading image
-  shimmer: ^2.0.0
+  cached_network_image: ^3.3.1 #  with downloading image
+  shimmer: ^3.0.0
   country_pickers: ^2.0.0
-
+  chat_bubbles: ^1.6.0
+  badges: ^3.1.2
   fancy_shimmer_image: ^2.0.2
   alarm: any
   auto_size_text: ^3.0.0

@@ -1,5 +1,7 @@
+import 'dart:async';
 import 'dart:io';
 
+import 'package:chat_bubbles/chat_bubbles.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:clubs_app/models/club.dart';
 import 'package:flutter/material.dart';
@@ -87,7 +89,7 @@ class LayoutCtr extends GetxController {
         ]:[
           GestureDetector(
             onTap: () {
-              refreshAll();
+              refreshClubs();
             },
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 11.0),
@@ -122,10 +124,11 @@ class LayoutCtr extends GetxController {
 
       case 1:
         updateAppbar(title:cUser.isAdmin? 'Join Requests':'Other Clubs',btns: []);
-        update();
         if(!cUser.isAdmin){
           selectedClubs = otherClubs;
         }
+        update();
+
         break;
 
       case 2:
@@ -173,15 +176,21 @@ class LayoutCtr extends GetxController {
   List<ClubEvent> selectedEvents = [];
   List<ScUser> selectedUsers = [];
   selectClub(clubID){
+    sharedPrefs!.reload();
+
     for (var club in allClubs) {
       if (club.id == clubID) {
         selectedClub = club;
       }
     }
-    selectedEvents = selectedClub.events;
+    layCtr.seenMessages = sharedPrefs!.getInt('${layCtr.selectedClub.id}')??0;
+    print('## getInt seenMessages = ${layCtr.seenMessages}');
+
+    selectedEvents = selectedClub.events.reversed.toList();
     selectedUsers = usersOfClub(layCtr.selectedClub);
     print('## selected club <${clubID}>');
     update();
+
   }
 
   List<ScUser> allUsers =[];
@@ -209,8 +218,6 @@ class LayoutCtr extends GetxController {
         list.add(usr);
       }
     }
-    update();
-
 
     return list;
   }
@@ -251,10 +258,11 @@ class LayoutCtr extends GetxController {
     /// add the image
     String itemImageUrl = await uploadOneImgToFb('clubs/${selectedClub.name}-${selectedClub.id}/events', newItemImage);
 
+   String eventDate = todayToString(showHoursNminutes: true);
     ClubEvent newEvent = ClubEvent(
       title: newEventTitleTec.text,
       desc: newEventDescTec.text,
-      date: todayToString(showHoursNminutes: true),
+      date: eventDate,
        imageUrl: itemImageUrl,
        id: specificID,
 
@@ -272,9 +280,12 @@ class LayoutCtr extends GetxController {
 
 
       Get.back(); //hide loading
-      newEventDescTec.clear();
+    layCtr.sendMessage('New Event "${newEventTitleTec.text}" has been added , Date : ${eventDate}');
+
+    newEventDescTec.clear();
       newEventTitleTec.clear();
     newItemImage = null;
+
     refreshThisClub();
     }catch  (err){
       print('## cant create event  : $err');
@@ -298,6 +309,9 @@ class LayoutCtr extends GetxController {
     allClubs = await getAlldocsModelsFromFb<Club>(
         true, clubsColl, (json) => Club.fromJson(json),
         localKey: '');
+    selectedClubs.clear();
+    myClubs.clear();
+    otherClubs.clear();
     for (Club club in allClubs) {
       if (club.members.contains(cUser.id)) {
         // user is in this club
@@ -307,12 +321,14 @@ class LayoutCtr extends GetxController {
         otherClubs.add(club);
       }
     }
+
     if(!cUser.isAdmin){
       selectedClubs = myClubs;
     }else{
       selectedClubs = allClubs;
 
     }
+    update();
     print('## all clubs (${allClubs.length}) // my clubs (${myClubs.length}) // other clubs (${otherClubs.length})');
   }
   addClubDialog() {
@@ -531,7 +547,6 @@ class LayoutCtr extends GetxController {
       });
 
   }
-
   declineReq(JoinRequest req){
     deleteDoc(docID: req.id,coll: requestsColl,success: (){
       refreshThisClub();
@@ -540,6 +555,112 @@ class LayoutCtr extends GetxController {
   }
 
 
+  ///MESSAGING
+  late  StreamSubscription<QuerySnapshot> streamSub;
+  Map<String, dynamic> messages = {};
+  List<Widget> messagesWidgets = [];
+  int seenMessages = 0;
+  int badgeCount = 0;
+
+
+
+
+
+  Future<void> sendMessage(String msg) async {
+    if (msg.isNotEmpty) {
+      clubsColl.doc(selectedClub.id ).get()
+          .then((DocumentSnapshot documentSnapshot) async {
+        if (documentSnapshot.exists) {
+          //get existing raters of garage
+          Map<String, dynamic> messages = documentSnapshot.get('messages');
+
+          Map<String, dynamic> msgDetails = {
+            'msg': msg,
+            'sender': authCtr.cUser.name,
+            'time': todayToString(showHoursNminutes: true),
+          };
+          messages[messages.length.toString()] = msgDetails;
+
+          //add raters again map to cloud
+          await clubsColl.doc(selectedClub.id).update({
+            'messages': messages,
+          }).then((value) async {
+            print('## messages sent');
+
+            update();
+          }).catchError((error) async {
+            print('## messages failed to sent');
+          });
+        }
+      });
+    } else {
+      print('## message cant be empty');
+      showSnack('message cant be empty');
+    }
+  }
+
+  streamingDoc(){
+    print('##_start_chat_Streaming');
+
+    if(selectedClub.id!=''){
+      streamSub  = clubsColl.where('id', isEqualTo: selectedClub.id ).snapshots().listen((snapshot) {
+        snapshot.docChanges.forEach((change) {
+          print('##_CHANGE_chat_Streaming (new message) ');
+          var chatDoc = snapshot.docs.first;
+          messages.clear();
+          messagesWidgets.clear();
+          messages = chatDoc.get('messages');
+          for(int i=0; i < messages.length ; i++ ){
+            Map<String,dynamic> msg = messages[i.toString()];
+            String msgText = msg['msg'];
+            bool showTail =true;
+            if(i < messages.length-1){
+              Map<String,dynamic> nextMsg = messages[(i+1).toString()];
+              if(msg['sender'] == nextMsg['sender']){
+                showTail = false;
+              }
+            }
+            bool isSender = cUser.name == msg['sender'];
+            messagesWidgets.add(
+              BubbleSpecialThree(
+                text: msgText,
+                textStyle: const TextStyle(
+                    color: Colors.white
+                ),
+                tail: showTail,
+                color: msgText.contains('has been added')?orangeCol: blueCol,
+                //tail: true,
+                isSender: isSender,
+              ),
+            );
+          }
+          if(layCtr.seenMessages<layCtr.messages.length){
+            layCtr.badgeCount=layCtr.messages.length - layCtr.seenMessages;
+          }
+          Future.delayed(Duration(milliseconds: 20),(){update();});
+        });
+      });
+    }else{
+      print('##_no_ID_to_stream_yet');
+    }
+
+
+
+  }
+  deleteMessages()async{
+    bool accept = await showNoHeader(txt: 'are you sure you want to remove all these messages ? ',btnOkText: 'Remove');
+    if(!accept) {
+      return;
+    }
+    updateDoc(docID: selectedClub.id,coll: clubsColl,fieldsMap: {'messages':{}});
+    showTos('all ${selectedClub.name} messages have been deleted',color: Colors.black87);
+    //Get.back();
+  }
+
+  stopStreamingDoc(){
+    streamSub.cancel();
+    print('##_stop_chat_Streaming');
+  }
 }
 
 
@@ -708,4 +829,5 @@ class _AddEvDiaState extends State<AddEvDia> {
           ),
         ));
   }
+
 }
