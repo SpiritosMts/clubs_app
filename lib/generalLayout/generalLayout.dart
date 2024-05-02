@@ -103,6 +103,12 @@ class _GeneralLayoutState extends State<GeneralLayout> {
               onPressed: () {
                 authCtr.signOutUser(shouldGoLogin: true);
 
+                //test
+                // ntfCtr.sendPushMessage(
+                //   receiverToken:cUser.deviceToken,
+                //   title: 'selectedClub.name',
+                //   body: 'messageToSend',
+                // );
               },
             ) ,
             actions: layCtr.appBarBtns,

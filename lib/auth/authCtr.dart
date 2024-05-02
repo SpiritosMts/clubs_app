@@ -57,10 +57,7 @@ class AuthController extends GetxController {
 
     firebaseUser.bindStream(firebaseAuth.userChanges());
     worker = ever(firebaseUser, _setInitialScreen);
-
   }
-
-
   _setInitialScreen(User? user) async {
     worker.dispose();
 
@@ -85,27 +82,12 @@ class AuthController extends GetxController {
   }
 
 
-  /// ************************ VERIFICATION CHECK ****************************************
-  checkVerification({bool isLoadingScreen =false,bool updateIsLoggedIn =false}) async {
-    print('## checking account verification state ...');
-    bool hasLoginAccess = true;
 
-    if ( hasLoginAccess) {//verified
-      print('## account<${cUser.email}> verified ');
-      //print('## gloabal loggedIn <${cUser.isLoggedIn }>  ');
-      //print('## local loggedIn <${localLogin}>  ');
-
-
-
-      goHome();
-
-    }
-  }
 
 
 
   ///  EMAIL 'signIn' + 'signUp'
-  signIn(String _email, String _password,  {Function()? onSignIn}) async {
+  signIn(String _email, String _password) async {
     try {
       print('## Email signing In ...');
 
@@ -113,8 +95,9 @@ class AuthController extends GetxController {
       await firebaseAuth.signInWithEmailAndPassword(
         email: _email,
         password: _password,
-      ).then((value)  {//account found
-        onSignIn!();//imn parameter
+      ).then((value)  async {//account found
+        await authCtr.getUserInfoByEmail(_email);
+
         print('## user credential available => ${value.user.toString()}');
       });
 
@@ -201,16 +184,13 @@ class AuthController extends GetxController {
     try {
       print('## signing Out . . . ');
 
-      // Sign out from Firebase, Google, and Facebook
       final signOutTasks = [
         firebaseAuth.signOut(),
 
       ];
 
-      // Wait for all sign-out tasks to complete
       await Future.wait(signOutTasks);
 
-      // If dbLogOut is true, update isLoggedIn field in Firestore
 
       if (shouldGoLogin) {
         await goLogin(email: authCtr.cUser.email);
@@ -231,7 +211,7 @@ class AuthController extends GetxController {
 
 
   /// GET-USER-INFO VY PROP
-  Future<void> getUserInfoByEmail(userEmail,{bool isGoogle = false,bool isLoadingScreen = false,bool withVerif = true}) async {
+  Future<void> getUserInfoByEmail(userEmail,{bool isLoadingScreen = false}) async {
     print('## getting user info by email < $userEmail > . ..');
 
     await usersColl.where('email', isEqualTo: userEmail).get().then((event) async {
@@ -241,10 +221,11 @@ class AuthController extends GetxController {
         cUser = ScUser.fromJson(userData);
         ntfCtr.streamUserToken();//get & start token streaming
         printJson(cUser.toJson());
+
       } else {
         print('## user doc with email < $userEmail >  dont exist ');
       }
-      if(withVerif) checkVerification(isLoadingScreen: isLoadingScreen);//register btn
+      goHome();
 
 
     }).catchError((e) {

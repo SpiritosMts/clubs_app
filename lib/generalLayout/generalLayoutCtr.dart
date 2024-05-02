@@ -304,6 +304,7 @@ class LayoutCtr extends GetxController {
     });
     update();
   }
+
   Future<void> refreshClubs() async {
     print('## refreshing clubs ...');
 
@@ -529,7 +530,7 @@ class LayoutCtr extends GetxController {
     // add user id to club members List of members IDs
     deleteDoc(docID: req.id,coll: requestsColl,success: (){//delete the request
       addElementsToList([req.studentID],'members',req.clubToJoinID,clubsCollName,canAddExistingElements: false);
-      refreshThisClub();
+      refreshRequests();
     });
   }
   removeFromClub(ScUser usr) async {
@@ -544,7 +545,7 @@ class LayoutCtr extends GetxController {
   }
   declineReq(JoinRequest req){
     deleteDoc(docID: req.id,coll: requestsColl,success: (){
-      refreshThisClub();
+      refreshRequests();
 
     });
   }
@@ -601,16 +602,13 @@ class LayoutCtr extends GetxController {
   sendNotifToAllClubUsers(){
     if(selectedUsers.isEmpty) return;
     selectedUsers.forEach((user) {
-      if(user.deviceToken!=''){
         ntfCtr.sendPushMessage(
           receiverToken:user.deviceToken,
           title: selectedClub.name,
           body: messageToSend,
         );
         print('## notif sent to "${user.name} <${user.email}>" ....');//
-      }else{
-        print('## notif NOT sent to "${user.name} <no token>" ');//
-      }
+
 
 
     });

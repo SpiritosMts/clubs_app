@@ -35,7 +35,7 @@ ScUser get cUser => authCtr.cUser;
 FirebaseAuth get firebaseAuth => FirebaseAuth.instance;
 
 
-String appDisplayName = 'ClubVibe';
+String appDisplayName = 'IsiClubs';
 
 String snapshotErrorMsg = 'check Connexion';
 

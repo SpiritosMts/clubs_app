@@ -14,6 +14,7 @@ import 'package:random_avatar/random_avatar.dart';
 import 'package:responsive_sizer/responsive_sizer.dart';
 import 'package:badges/badges.dart' as badges;
 
+import 'firebaseVoids.dart';
 import 'main.dart';
 import 'models/club.dart';
 import 'models/event.dart';
@@ -198,6 +199,12 @@ clubCard(Club clb,i,{bool tappable = true,    Function()? btnOnPress,}){
   int clubMessages = clb.messages.length;
   int badgeCount = clubMessages-seenMessages;
 
+  bool isMyClub(){
+    if(clb.members.contains(cUser.id)){
+      return true;
+    }
+    return false;
+  }
 
   return GestureDetector(
 
@@ -247,7 +254,7 @@ clubCard(Club clb,i,{bool tappable = true,    Function()? btnOnPress,}){
               )    ,
                       const SizedBox(width: 16),
                       SizedBox(
-                        width: 60.w,
+                        width: 55.w,
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -328,7 +335,26 @@ clubCard(Club clb,i,{bool tappable = true,    Function()? btnOnPress,}){
                 ],
               ),
             ),
-            if(badgeCount > 0 && !cUser.isAdmin ) Positioned(
+            if(cUser.isAdmin) Positioned(
+              top: -4,
+              right: -4,
+              child: IconButton(
+                icon: const Icon(Icons.close),
+                color: Colors.redAccent,
+                splashRadius: 1,
+                onPressed: () async {
+                  bool accept = await showNoHeader(txt: 'are you sure you want to remove this club');
+                  if(!accept) {
+                    return;
+                  }
+                  deleteDoc(docID: clb.id,coll: clubsColl,success: (){//delete the request
+                   layCtr.refreshClubs();
+                  });
+                },
+              ),
+            ),
+
+            if(badgeCount > 0 && !cUser.isAdmin && isMyClub() ) Positioned(
               top: 0,
               left: 0,
               child: Image.asset(

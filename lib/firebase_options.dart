@@ -65,4 +65,5 @@ class DefaultFirebaseOptions {
     projectId: 'clubs-9999',
     storageBucket: 'clubs-9999.appspot.com',
   );
+
 }

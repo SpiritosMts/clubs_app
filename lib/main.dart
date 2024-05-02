@@ -1,3 +1,4 @@
+import 'package:clubs_app/myVoids.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
@@ -23,8 +24,8 @@ void main() async {
   print('##run_main');
 
   WidgetsFlutterBinding.ensureInitialized();
-  ///initialize firebase
-  await initFirebase();
+   ///initialize firebase in backgroung messaging
+   await initFirebase();
 
   ///PREFS
   sharedPrefs = await SharedPreferences.getInstance();
@@ -63,7 +64,7 @@ class _MyAppState extends State<MyApp> {
           return GetMaterialApp(
             navigatorKey: navigatorKey,
             debugShowCheckedModeBanner: false,
-            title: 'Clubs',
+            title: appDisplayName,
 
             themeMode: ThemeMode.light,
             //light

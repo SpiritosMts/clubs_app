@@ -8,10 +8,9 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:get/get.dart';
-import 'package:rxdart/rxdart.dart';
 import 'package:http/http.dart' as http;
-
 import '../bindings.dart';
+import '../main.dart';
 import '../firebaseVoids.dart';
 import '../firebase_options.dart';
 import '../myVoids.dart';
@@ -20,29 +19,38 @@ import '../myVoids.dart';
 //in bindings.dart (initialize ctr)
 //in main.dart (initilize Fcm)
 //after verify user and get its data (get token)
-
+// in api & cre enable "cloud messaging"
+// add permission in manifest
 class FirebaseMessagingCtr extends GetxController {
 
 
 
   int messageCount = 0;
-  String serverKey = 'AAAA2_kDUm0:APA91bFZZwv7SQ7QpIEx_6m2TTjwz2YouTY_82mZegQFGGU54FSsg1TkKrGydI1Yign5cEir3E93xczPdwqNubUjqpI4CuN3833JyA9byVrx5VGJfEzaXQmZjN3FMOTc5OHTnTokLk58';
+  String serverKey = 'AAAA2_kDUm0:APA91bHZk0qBUbcZz4SJUrX7HJFT9kYCd3w1muFiSj7yul4NduYyprhVbPw7GJyV3hAfEdy-LJr5YuEzSvAY7sSCdJu-NLnKuFD28ZSSEo34rdYN23ronwXQacrGdBYhgX5t-a4ig3cb';
   static const vapidKey = "ja4sOAzxnRTNMnOpiPO-Yk_WjFhLgdjDGvk7VaT6lsI";
   // used to pass messages from event handler to the UI
   String lastMessage = "";
-  String token = "";
   String? initialMessage;
   bool resolved = false;
   bool isNotifActive = true;
 
 
-  late Stream<String> _tokenStream;
-
+  ///TOKEN
+  String token = "";
+  late Stream<String> _tokenStream ;
   streamUserToken(){
     FirebaseMessaging.instance.getToken(vapidKey:vapidKey).then(setToken);
     _tokenStream = FirebaseMessaging.instance.onTokenRefresh;
     _tokenStream.listen(setToken);
   }
+  void setToken(String? _token) {
+    print('## this device FCM Token: $_token');
+    token = _token!;
+    updateFieldInFirestore(usersCollName,cUser.id,'deviceToken',_token,addSuccess: (){
+      //print('## user_deviceToken in fb updated  <');
+    });
+  }
+
 
   @override
   onInit() {
@@ -66,15 +74,6 @@ class FirebaseMessagingCtr extends GetxController {
     FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
       print('## A new onMessageOpenedApp event was published! ##');
 
-    });
-  }
-
-
-  void setToken(String? _token) {
-    print('## this device FCM Token: $_token');
-    token = _token!;
-    updateFieldInFirestore(usersCollName,cUser.id,'deviceToken',_token,addSuccess: (){
-      //print('## user_deviceToken in fb updated  <');
     });
   }
 
@@ -138,18 +137,20 @@ class FirebaseMessagingCtr extends GetxController {
 /// NOtification initilize
 late AndroidNotificationChannel channel;
 bool isFlutterLocalNotificationsInitialized = false;
-late FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin;
+ FlutterLocalNotificationsPlugin? flutterLocalNotificationsPlugin;
 Future<void> setupFlutterNotifications() async {
+  print('## setupFlutterNotifications ## ');
+
   if (isFlutterLocalNotificationsInitialized) {
     return;
   }
   channel = const AndroidNotificationChannel(
-      'Products-ID', // id
-      'Products Channel', // title
+      'Notif-ID', // id
+      'Notif Channel', // title
       description: 'This channel is used for products advertisement', // description
       importance: Importance.max,
-      sound: RawResourceAndroidNotificationSound('notif_sound'),//android/app/src/main/res/raw
-
+     // sound: RawResourceAndroidNotificationSound('notif_sound'),//android/app/src/main/res/raw
+      showBadge: true,
       playSound: true,
       enableVibration: true
 
@@ -157,23 +158,22 @@ Future<void> setupFlutterNotifications() async {
 
   flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
 
-  /// Create an Android Notification Channel.
-  ///
-  /// We use this channel in the `AndroidManifest.xml` file to override the
-  /// default FCM channel to enable heads up notifications.
-  await flutterLocalNotificationsPlugin.resolvePlatformSpecificImplementation<
-      AndroidFlutterLocalNotificationsPlugin>()
+  await flutterLocalNotificationsPlugin!.resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>()
       ?.createNotificationChannel(channel);
-
-  /// Update the iOS foreground notification presentation options to allow
-  /// heads up notifications.
   await FirebaseMessaging.instance.setForegroundNotificationPresentationOptions(
     alert: true,
     badge: true,
     sound: true,
   );
+  // Initialize the local notifications plugin with a callback function
+  const AndroidInitializationSettings initializationSettingsAndroid = AndroidInitializationSettings('@mipmap/ic_launcher');;
+  const InitializationSettings initializationSettings = InitializationSettings(
+    android: initializationSettingsAndroid,
+  );
+  await flutterLocalNotificationsPlugin!.initialize(
+    initializationSettings,
+  );
   isFlutterLocalNotificationsInitialized = true;
-  print('## isFlutterLocalNotificationsInitialized = $isFlutterLocalNotificationsInitialized ');
 }
 Future<void> reqFcmPermission() async {
 
@@ -186,19 +186,20 @@ Future<void> reqFcmPermission() async {
     provisional: false,
     sound: true,
   );
-
   if (kDebugMode) {
     print('## Fcm Permission granted: ${settings.authorizationStatus}');
   }
 }
 Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
-  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  await initFirebase();
   await setupFlutterNotifications();
   showFlutterNotification(message);
 
   print('## Handling a background message ${message.messageId}');
 }
 Future<void> showFlutterNotification(RemoteMessage message) async {
+  print('## showFlutterNotification ##');
+
   RemoteNotification? notification = message.notification;
   Map<String, dynamic> data = message.data;
   AndroidNotification? android = message.notification?.android;
@@ -218,7 +219,7 @@ Future<void> showFlutterNotification(RemoteMessage message) async {
 
   if (notification != null && android != null && !kIsWeb) {
 
-    if(ntfCtr.isNotifActive) flutterLocalNotificationsPlugin.show(
+    if(ntfCtr.isNotifActive) flutterLocalNotificationsPlugin!.show(
       notification.hashCode,
       notification.title,
       notification.body,
@@ -230,19 +231,12 @@ Future<void> showFlutterNotification(RemoteMessage message) async {
           channelDescription: channel.description,
           importance: Importance.max,
           priority: Priority.max,
-          sound: RawResourceAndroidNotificationSound('notif_sound'),//android/app/src/main/res/raw
-          icon: 'ic_notif_belaaraby',
+          //sound: RawResourceAndroidNotificationSound('notif_sound'),//android/app/src/main/res/raw
+          //icon: 'ic_notif_belaaraby',
           color: Colors.yellow,
           playSound: true,
           enableVibration: true,
-
           styleInformation: bigPictureStyleInformation,
-          // largeIcon: DrawableResourceAndroidBitmap(largeIconPath.path), // Set the local image path as the large icon
-
-//          largeIcon: await getLargeIconFromUrl(notificationImage), // Set the large icon here
-
-
-
         ),
       ),
 

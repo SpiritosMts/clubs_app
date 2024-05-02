@@ -34,10 +34,7 @@ class _LoginState extends State<Login> {
       authCtr.signIn(
           emailTec.text,
           passwordTec.text,
-          onSignIn: () async {///account Found
-            authCtr.enteredPwd = passwordTec.text;
-            await authCtr.getUserInfoByEmail(emailTec.text);
-      });
+      );
     }
   }
 

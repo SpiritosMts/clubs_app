@@ -20,6 +20,7 @@ class GetxBinding implements Bindings {
     Get.put(AuthController());
     Get.put(FirebaseMessagingCtr());
 
+    //Get.lazyPut<FirebaseMessagingCtr>(() => FirebaseMessagingCtr(),fenix: true);
     Get.lazyPut<LayoutCtr>(() => LayoutCtr(),fenix: true);
 
 

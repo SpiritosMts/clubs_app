@@ -41,9 +41,7 @@ class _AllJoinsRequestsState extends State<AllJoinsRequests> {
                       itemCount: layCtr.allRequests.length,
                       itemBuilder: (BuildContext context, int index) {
                         JoinRequest clb = (layCtr.allRequests[index]);
-                        return requestCard(clb, index,tappable: true,btnOnPress: (){
-
-                        });
+                        return requestCard(clb, index,tappable: true,);
                       }
                   ):Center(child: Text('No requests to show',style: TextStyle(fontSize: 16)),),
                 ),
