@@ -23,6 +23,7 @@ import 'package:uuid/uuid.dart';
 
 class LayoutCtr extends GetxController {
   String appBarText ='';//appbar title
+  String messageToSend ='';
   List<Widget> appBarBtns=[];
 
   @override
@@ -225,7 +226,7 @@ class LayoutCtr extends GetxController {
 
 
 
-  ///event
+  /// event
   addEventDialog() {
     return AlertDialog(
       backgroundColor: dialogBgCol,
@@ -358,12 +359,12 @@ class LayoutCtr extends GetxController {
               customTextField(
                 textInputType: TextInputType.text,
                 controller: newClubNameTec,
-                labelText: 'Name'.tr,
-                hintText: ''.tr,
+                labelText: 'Name',
+                hintText: '',
                 icon: Icons.title,
                 validator: (value) {
                   if (value!.isEmpty) {
-                    return "name can't be empty".tr;
+                    return "name can't be empty";
                   }
 
 
@@ -375,8 +376,8 @@ class LayoutCtr extends GetxController {
               customTextField(
                 textInputType: TextInputType.text,
                 controller: newClubDescTec,
-                labelText: 'Description'.tr,
-                hintText: ''.tr,
+                labelText: 'Description',
+                hintText: '',
                 icon: Icons.description,
                 validator: (value) {
 
@@ -404,7 +405,7 @@ class LayoutCtr extends GetxController {
                         Get.back();
                       },
                       child: Text(
-                        "Cancel".tr,
+                        "Cancel",
                         style: TextStyle(color: dialogBtnCancelTextCol),
                       ),
                     ),
@@ -417,7 +418,7 @@ class LayoutCtr extends GetxController {
                         }
                       },
                       child: Text(
-                        "Add".tr,
+                        "Add",
                         style: TextStyle(color: dialogBtnOkTextCol ),
                       ),
                     ),
@@ -454,9 +455,7 @@ class LayoutCtr extends GetxController {
       print('## cant create club  : $err');
     }
   }
-  openClub(){
-    Get.to(()=>ClubDetails());
-  }
+
   Future<bool> alreadySentReq() async {
 
     QuerySnapshot querySnapshot = await requestsColl
@@ -469,18 +468,14 @@ class LayoutCtr extends GetxController {
       print('Document found with specified conditions');
 
       return true;
-      // You can access the documents here and process them further
-      for (var doc in querySnapshot.docs) {
-        print('Document ID: ${doc.id}');
-        print('Document data: ${doc.data()}');
-      }
+
     } else {
       print('No document found with specified conditions');
       return false;
 
     }
   }
-/// req
+  /// Requests
   Future<void> refreshRequests() async {
     allRequests = await getAlldocsModelsFromFb<JoinRequest>(
         true, requestsColl, (json) => JoinRequest.fromJson(json),
@@ -555,7 +550,7 @@ class LayoutCtr extends GetxController {
   }
 
 
-  ///MESSAGING
+  /// MESSAGING + notif
   late  StreamSubscription<QuerySnapshot> streamSub;
   Map<String, dynamic> messages = {};
   List<Widget> messagesWidgets = [];
@@ -568,6 +563,7 @@ class LayoutCtr extends GetxController {
 
   Future<void> sendMessage(String msg) async {
     if (msg.isNotEmpty) {
+      messageToSend =msg;
       clubsColl.doc(selectedClub.id ).get()
           .then((DocumentSnapshot documentSnapshot) async {
         if (documentSnapshot.exists) {
@@ -581,13 +577,16 @@ class LayoutCtr extends GetxController {
           };
           messages[messages.length.toString()] = msgDetails;
 
-          //add raters again map to cloud
           await clubsColl.doc(selectedClub.id).update({
             'messages': messages,
           }).then((value) async {
             print('## messages sent');
+            sendNotifToAllClubUsers();
+
+            messageToSend ='';
 
             update();
+
           }).catchError((error) async {
             print('## messages failed to sent');
           });
@@ -597,6 +596,24 @@ class LayoutCtr extends GetxController {
       print('## message cant be empty');
       showSnack('message cant be empty');
     }
+  }
+
+  sendNotifToAllClubUsers(){
+    if(selectedUsers.isEmpty) return;
+    selectedUsers.forEach((user) {
+      if(user.deviceToken!=''){
+        ntfCtr.sendPushMessage(
+          receiverToken:user.deviceToken,
+          title: selectedClub.name,
+          body: messageToSend,
+        );
+        print('## notif sent to "${user.name} <${user.email}>" ....');//
+      }else{
+        print('## notif NOT sent to "${user.name} <no token>" ');//
+      }
+
+
+    });
   }
 
   streamingDoc(){
@@ -656,14 +673,13 @@ class LayoutCtr extends GetxController {
     showTos('all ${selectedClub.name} messages have been deleted',color: Colors.black87);
     //Get.back();
   }
-
   stopStreamingDoc(){
     streamSub.cancel();
     print('##_stop_chat_Streaming');
   }
 }
 
-
+///Add event dialog
 class AddEvDia extends StatefulWidget {
   const AddEvDia({super.key});
 
@@ -691,12 +707,12 @@ class _AddEvDiaState extends State<AddEvDia> {
                 customTextField(
                   textInputType: TextInputType.text,
                   controller: layCtr.newEventTitleTec,
-                  labelText: 'Title'.tr,
-                  hintText: ''.tr,
+                  labelText: 'Title',
+                  hintText: '',
                   icon: Icons.title,
                   validator: (value) {
                     if (value!.isEmpty) {
-                      return "title can't be empty".tr;
+                      return "title can't be empty";
                     }
 
 
@@ -708,8 +724,8 @@ class _AddEvDiaState extends State<AddEvDia> {
                 customTextField(
                   textInputType: TextInputType.text,
                   controller: layCtr.newEventDescTec,
-                  labelText: 'Description'.tr,
-                  hintText: ''.tr,
+                  labelText: 'Description',
+                  hintText: '',
                   icon: Icons.description,
                   validator: (value) {
 
@@ -733,7 +749,7 @@ class _AddEvDiaState extends State<AddEvDia> {
                           PickedFile img = await showImageChoiceDialog();
                           layCtr.updateImage(img);
                         },
-                        child: Text('Add Image'.tr),
+                        child: Text('Add Image'),
                       ),
                     ),
 
@@ -804,7 +820,7 @@ class _AddEvDiaState extends State<AddEvDia> {
                           Get.back();
                         },
                         child: Text(
-                          "Cancel".tr,
+                          "Cancel",
                           style: TextStyle(color: dialogBtnCancelTextCol),
                         ),
                       ),
@@ -817,7 +833,7 @@ class _AddEvDiaState extends State<AddEvDia> {
                           }
                         },
                         child: Text(
-                          "Add".tr,
+                          "Add",
                           style: TextStyle(color: dialogBtnOkTextCol ),
                         ),
                       ),

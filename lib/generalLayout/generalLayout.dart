@@ -40,6 +40,7 @@ class _GeneralLayoutState extends State<GeneralLayout> {
     ];
   }
 
+
   List<PersistentBottomNavBarItem> _navBarsItems() {
     return cUser.isAdmin? [
       PersistentBottomNavBarItem(
@@ -51,13 +52,13 @@ class _GeneralLayoutState extends State<GeneralLayout> {
       ),
       PersistentBottomNavBarItem(
         icon: Icon(Icons.group_add_outlined),
-        title: ("Requests".tr),
+        title: ("Requests"),
         activeColorPrimary: navBarActive,
         inactiveColorPrimary: navBarDesactive,
       ),
       PersistentBottomNavBarItem(
         icon: Icon(Icons.supervised_user_circle),
-        title: ("All Users".tr),
+        title: ("All Users"),
         activeColorPrimary: navBarActive,
         inactiveColorPrimary: navBarDesactive,
       ),
@@ -72,7 +73,7 @@ class _GeneralLayoutState extends State<GeneralLayout> {
       ),
       PersistentBottomNavBarItem(
         icon: Icon(Icons.group_outlined),
-        title: ("Other Clubs".tr),
+        title: ("Other Clubs"),
         activeColorPrimary: navBarActive,
         inactiveColorPrimary: navBarDesactive,
       ),

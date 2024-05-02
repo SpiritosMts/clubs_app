@@ -66,7 +66,7 @@ Future<void> addDocument(
           //SetOptions(merge: true),
         );
         if (addRealTime) {
-          DatabaseReference serverData = database!.ref(docPathRealtime);
+          DatabaseReference serverData = FirebaseDatabase.instance.ref(docPathRealtime);
           await serverData.update({"$specificID": realtimeMap}).then((value) async {});
         }
       }
@@ -89,7 +89,7 @@ Future<void> addDocument(
           //SetOptions(merge: true),
         );
         if (addRealTime) {
-          DatabaseReference serverData = database!.ref(docPathRealtime);
+          DatabaseReference serverData = FirebaseDatabase.instance.ref(docPathRealtime);
           await serverData.update({"$docID": realtimeMap}).then((value) async {});
         }
       }
@@ -109,11 +109,11 @@ Future<void> updateDoc({required CollectionReference coll , required String docI
   await coll.doc(docID).get().then((DocumentSnapshot documentSnapshot) async {
     if (documentSnapshot.exists) {
       await coll.doc(docID).update(fieldsMap).then((value) async {
-        //showSnack('doc updated'.tr);
+        //showSnack('doc updated');
         print('## doc updated');
         //Get.back();//cz it in dialog
       }).catchError((error) async {
-        showSnack('doc failed to updated'.tr);
+        showSnack('doc failed to updated');
         print('## doc falide to updated');
         throw Exception('## Exception ');
 
@@ -122,14 +122,7 @@ Future<void> updateDoc({required CollectionReference coll , required String docI
   });
 }
 
-/// delete by url
-Future<void> deleteFileByUrlFromStorage(String url) async {
-  try {
-    await FirebaseStorage.instance.refFromURL(url).delete();
-  } catch (e) {
-    print("Error deleting file: $e");
-  }
-}
+
 
 Future<void> addElementsToList(List newElements, String fieldName, String docID, String collName, {bool canAddExistingElements = true}) async {
   print('## start adding list <$newElements> TO <$fieldName>_<$docID>_<$collName>');
@@ -258,30 +251,12 @@ Future<List<T>> getAlldocsModelsFromFb<T>(bool online, CollectionReference coll,
 }
 
 
-
-Future<bool> checkDocExist(String docID, coll) async {
-  var docSnapshot = await coll.doc(docID).get();
-
-  if (docSnapshot.exists) {
-    print('## docs with id=<$docID> exists');
-  } else {
-    print('## docs with <id=$docID> NOT exists');
-  }
-  return docSnapshot.exists;
-}
-
-
-
-
-
-
-
 Future<void> deleteDoc({Function()? success, required String docID,required CollectionReference coll})async {
   //if docID doesnt exist it will success to remove
   await coll.doc(docID).delete().then((value) async {
     print('## document<$docID> from <${coll.path}> deleted');
     if(success!=null) success();
-    //showSnack('doc deleted'.tr, color: Colors.redAccent.withOpacity(0.8));
+    //showSnack('doc deleted', color: Colors.redAccent.withOpacity(0.8));
   }).catchError((error) async {
     print('## document<$docID> from <${coll.path}> deleting error = ${error}');
     showSnack(snapshotErrorMsg,color:Colors.black54);
@@ -290,7 +265,18 @@ Future<void> deleteDoc({Function()? success, required String docID,required Coll
   });
 
 }
+Future<void> updateFieldInFirestore(String collectionName, String docId, String fieldName, dynamic fieldValue,{Function()? addSuccess,})async {
+  FirebaseFirestore.instance.collection(collectionName).doc(docId).update({
+    fieldName: fieldValue,
+  }).then((value) {
+    print('## Field updated successfully <$collectionName/$docId/$fieldName> = <${fieldValue}>');
+    addSuccess!();
 
+  }).catchError((error) {
+    print('## Error updating field: $error /// <$collectionName/$docId/$fieldName> = <${fieldValue}>');
+
+  });
+}
 
 void deleteFromMap({coll, docID, fieldMapName, String mapKeyToDelete ='', bool withBackDialog = false, String targetInvID ='', Function()? addSuccess,}) {
 
@@ -374,4 +360,5 @@ Future<void> addToMap({coll, docID, fieldMapName, mapToAdd, Function()? addSucce
     }
   });
 }
+
 

@@ -79,7 +79,7 @@ class _LoginState extends State<Login> {
                 SizedBox(
                   height: 20,
                 ),
-                animatedText('Welcome to $appDisplayName'.tr,26,150),
+                animatedText('Welcome to $appDisplayName',26,150),
                 SizedBox(
                   height: 7.h,
                 ),
@@ -96,18 +96,18 @@ class _LoginState extends State<Login> {
                         //email field
                         customTextField(
                           controller: emailTec,
-                          labelText: 'Email'.tr,
-                          hintText: 'Enter your email'.tr,
+                          labelText: 'Email',
+                          hintText: 'Enter your email',
                           icon: Icons.email,
                           isPwd: false,
                           obscure: false,
                           onSuffClick: (){},
                           validator: (value) {
                             if (value!.isEmpty) {
-                              return "email can't be empty".tr;
+                              return "email can't be empty";
                             }
                             if (!EmailValidator.validate(value)) {
-                              return ("Enter a valid email".tr);
+                              return ("Enter a valid email");
                             } else {
                               return null;
                             }
@@ -121,8 +121,8 @@ class _LoginState extends State<Login> {
                           children: [
                             customTextField(
                               controller: passwordTec,
-                              labelText: 'Password'.tr,
-                              hintText: 'Enter your password'.tr,
+                              labelText: 'Password',
+                              hintText: 'Enter your password',
                               icon: Icons.lock,
                               isPwd: true,
                               obscure: _isPwdObscure,
@@ -137,7 +137,7 @@ class _LoginState extends State<Login> {
                                   return "password can't be empty"  .tr;
                                 }
                                 if (!regex.hasMatch(value)) {
-                                  return ('Enter a valid password of at least 6 characters'.tr);
+                                  return ('Enter a valid password of at least 6 characters');
                                 } else {
                                   return null;
                                 }
@@ -149,7 +149,7 @@ class _LoginState extends State<Login> {
                               },
                               child: Padding(
                                 padding: const EdgeInsets.symmetric(horizontal: 20.0,vertical: 5.0),
-                                child: Text('forgot password ?'.tr,style: TextStyle(
+                                child: Text('forgot password ?',style: TextStyle(
                                   color: normalTextCol,
                                   fontWeight: FontWeight.w400,
                                 ),),
@@ -179,7 +179,7 @@ class _LoginState extends State<Login> {
                               btnOnPress: () async {
                                 login();
                               },
-                              textBtn: 'Login'.tr,
+                              textBtn: 'Login',
                               btnWidth: 130,
                               icon: Icon(
                                 LineIcons.arrowCircleRight,
@@ -198,7 +198,7 @@ class _LoginState extends State<Login> {
                         Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Text('you have no account ?'.tr,style: TextStyle(
+                            Text('you have no account ?',style: TextStyle(
                               color: normalTextCol,
                               fontWeight: FontWeight.w500,
                             ),),
@@ -208,7 +208,7 @@ class _LoginState extends State<Login> {
 
                               }),
                               child: Text(
-                                'Sign Up'.tr,
+                                'Sign Up',
                                 style: const TextStyle(
                                   color: orangeCol,
                                   fontSize: 15,

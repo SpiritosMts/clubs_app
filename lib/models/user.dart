@@ -16,18 +16,12 @@ class ScUser {
   String pwd;
   String phone;
   String address;
-  String role;
   String deviceToken;
-
-  bool haveAccess;
   bool isAdmin;
-  bool banned;
-  bool verified;
 
   //time
   String joinTime;
 
-  Map<String, dynamic> notifications;
 
 
   ScUser({
@@ -35,17 +29,11 @@ class ScUser {
     this.email = '',
     this.name = '',
     this.pwd = '',
-    this.deviceToken = '',
     this.phone = '',
     this.address = '',
-    this.haveAccess = false,
+    this.deviceToken = '',
     this.isAdmin = false,
-    this.banned = false,
     this.joinTime = '',
-
-    this.verified = false,
-    this.notifications = const {},
-    this.role = '',
 
   });
 
@@ -58,17 +46,12 @@ class ScUser {
       'email': email,
       'name': name,
       'pwd': pwd,
-      'phone': phone,
       'deviceToken': deviceToken,
+      'phone': phone,
       'address': address,
-      'accepted': haveAccess,
       'isAdmin': isAdmin,
-      'banned': banned,
-      'verified': verified,
       //'cords': cords,
       'joinTime': joinTime,
-      'notifications': notifications,
-      'role': role,
     };
   }
 
@@ -80,20 +63,12 @@ class ScUser {
       name: json['name'] ?? '',
       email: json['email'] ?? '',
       pwd: json['pwd'] ?? '',
+      deviceToken: json['deviceToken'] ?? '',
       phone: json['phone'] ?? '',
       address: json['address'] ?? '',
-      deviceToken: json['deviceToken'] ?? '',
-      haveAccess: json['haveAccess'] ?? false,
       isAdmin: json['isAdmin'] ?? false,
-      banned: json['banned'] ?? false,
-      verified: json['verified'] ?? false,
-
-
       //cords: json['cords'] ?? const GeoPoint(0.0, 0.0),
       joinTime: json['joinTime'] ?? '',
-
-      notifications: json['notifications'] ?? {},
-      role: json['role'] ?? '',
     );
   }
 }

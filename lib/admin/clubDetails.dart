@@ -57,16 +57,15 @@ class _ClubDetailsState extends State<ClubDetails> with TickerProviderStateMixin
               'Club Info',style: TextStyle(
               fontWeight: FontWeight.w500,
               color: appBarTitleColor,
-            ),
+             ),
             ),
             bottom: appBarUnderline(),
             leading:IconButton(
-              icon: Icon(Icons.group,color: appBarNotificationBellColor,),
+              icon: Icon(Icons.arrow_back_outlined,color: appBarNotificationBellColor,),
               onPressed: () {
-                Get.to(()=>ClubUsersList());
-
-              },
-            ) ,
+                Get.back();
+                },
+            ),
             actions: [
              if(cUser.isAdmin) ...[
                //refresh
@@ -114,6 +113,21 @@ class _ClubDetailsState extends State<ClubDetails> with TickerProviderStateMixin
                    ),
                  ),
                ),
+               // club members
+               GestureDetector(
+                 onTap: () {
+                   Get.to(()=>ClubUsersList());
+                 },
+                 child: Padding(
+                   padding: const EdgeInsets.symmetric(horizontal: 11.0),
+                   child: Center(
+                     child: Icon(
+                       Icons.group,
+                       color: appBarButtonsCol,
+                     ),
+                   ),
+                 ),
+               )
              ],
              if(!cUser.isAdmin) ...[
                 //refresh
@@ -152,15 +166,16 @@ class _ClubDetailsState extends State<ClubDetails> with TickerProviderStateMixin
                     ),
                   ),
                 ),
-              if(false) GestureDetector(
+               // club members
+               GestureDetector(
                  onTap: () {
-                   Get.to(()=>ClubMessages());
+                   Get.to(()=>ClubUsersList());
                  },
                  child: Padding(
                    padding: const EdgeInsets.symmetric(horizontal: 11.0),
                    child: Center(
                      child: Icon(
-                       Icons.message,
+                       Icons.group,
                        color: appBarButtonsCol,
                      ),
                    ),
@@ -207,7 +222,7 @@ class _ClubDetailsState extends State<ClubDetails> with TickerProviderStateMixin
                         crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
                           Text(
-                            'Members:'.tr,
+                            'Members:',
                             style: TextStyle(
                               fontSize: 23.0,
                               color: normalTextCol.withOpacity(0.5),
@@ -254,7 +269,7 @@ maxLines: 5,
                   text: TextSpan(children: [
                     if (true)
                       TextSpan(
-                          text: 'about:'.tr,
+                          text: 'about:',
                           style: GoogleFonts.almarai(
                             height: 1,
                             textStyle: TextStyle(color: Colors.black87, fontSize: 15, fontWeight: FontWeight.w500),

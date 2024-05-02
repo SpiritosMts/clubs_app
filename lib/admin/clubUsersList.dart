@@ -26,6 +26,12 @@ class _ClubUsersListState extends State<ClubUsersList> {
           color: appBarTitleColor,
         ),
         ),
+        leading:IconButton(
+          icon: Icon(Icons.arrow_back_outlined,color: appBarNotificationBellColor,),
+          onPressed: () {
+            Get.back();
+          },
+        ),
         bottom: appBarUnderline(),
 
       ),

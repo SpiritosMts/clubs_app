@@ -10,7 +10,6 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:loading_indicator/loading_indicator.dart';
 import 'package:responsive_sizer/responsive_sizer.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
-import '../privateData.dart';
 import 'bindings.dart';
 import 'myUi.dart';
 import 'myVoids.dart';
@@ -24,8 +23,7 @@ class LoadingScreen extends StatefulWidget {
 }
 
 class _VerifySigningInState extends State<LoadingScreen> {
-  // StreamSubscription<User?>? user;
-  //BrUser cUser = BrUser();
+
 
   late bool canShowCnxFailed;
   late Timer timer;
@@ -60,31 +58,13 @@ class _VerifySigningInState extends State<LoadingScreen> {
       print('## connected to internet');
       timer.cancel();
 
-      //get private data
-      await getPrivateData();
 
-      //check app access
-      if (!access) {
-        print('## access denied');
-
-        showTos('Server Error'.tr);
-        SystemNavigator.pop();
-        // showWarning(
-        //   txt: 'Server Error'.tr,
-        //   btnOkPress: () async {
-        //     SystemNavigator.pop();
-        //   },
-        // );
-      }
-
-      //has access to app
-      else{
         if (withFetchUser) {
           authCtr.fetchUser(); // find route depending on user role TODO
         } else {
-          goHome();
+          goLogin();
         }
-      }
+
 
       /// => next route < LOGIN (if no user logged in found)  / HOME (user found) >
     }
@@ -140,7 +120,7 @@ class _VerifySigningInState extends State<LoadingScreen> {
                     ? Column(
                         children: [
                           Text(
-                            'please verify network...'.tr,
+                            'please verify network...',
                             textAlign: TextAlign.center,
                             style: TextStyle(
                               fontSize: 18.sp,

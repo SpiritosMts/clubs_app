@@ -56,7 +56,7 @@ class _ForgotPasswordState extends State<ForgotPassword> {
                     height: 150,
                   ),
                   SizedBox(height: 40),
-                  animatedText('Forgot Your password ?'.tr,23 ,120),
+                  animatedText('Forgot Your password ?',23 ,120),
 
                   SizedBox(
                     height: 20,
@@ -73,18 +73,18 @@ class _ForgotPasswordState extends State<ForgotPassword> {
 
                           customTextField(
                             controller: forgotEmailCtr,
-                            labelText: 'Email'.tr,
-                            hintText: 'Enter your email'.tr,
+                            labelText: 'Email',
+                            hintText: 'Enter your email',
                             icon: Icons.email,
                             isPwd: false,
                             obscure: false,
                             onSuffClick: (){},
                             validator: (value) {
                               if (value!.isEmpty) {
-                                return "email can't be empty".tr;
+                                return "email can't be empty";
                               }
                               if (!EmailValidator.validate(value)) {
-                                return ("Enter a valid email".tr);
+                                return ("Enter a valid email");
                               } else {
                                 return null;
                               }
@@ -104,7 +104,7 @@ class _ForgotPasswordState extends State<ForgotPassword> {
                               }
                               },
 
-                            textBtn: 'Send'.tr,
+                            textBtn: 'Send',
                             btnWidth: 110,
                             icon: Icon(
                               Icons.login,

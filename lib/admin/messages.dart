@@ -21,6 +21,7 @@ class _ClubMessagesState extends State<ClubMessages> with TickerProviderStateMix
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: AppBar(
+
         backgroundColor: appBarBgColor,
         title: Text(
         'Messages',style: TextStyle(
@@ -30,6 +31,12 @@ class _ClubMessagesState extends State<ClubMessages> with TickerProviderStateMix
         ),
 
     ),
+          leading:IconButton(
+            icon: Icon(Icons.arrow_back_outlined,color: appBarNotificationBellColor,),
+            onPressed: () {
+              Get.back();
+            },
+          ),
     bottom: appBarUnderline(),
           actions: [
             if(cUser.isAdmin) ...[
@@ -65,6 +72,7 @@ class _ClubMessagesState extends State<ClubMessages> with TickerProviderStateMix
               layCtr.update();
               layCtr.seenMessages = layCtr.messages.length;
               sharedPrefs!.setInt('${layCtr.selectedClub.id}',layCtr.seenMessages);
+
               print('## setInt seenMessages = ${layCtr.seenMessages} ');
               layCtr.selectClub(layCtr.selectedClub.id);
               sharedPrefs!.reload();
@@ -97,9 +105,11 @@ class _ClubMessagesState extends State<ClubMessages> with TickerProviderStateMix
               ///send btn
               if(!cUser.isAdmin) Container(),
              if(cUser.isAdmin) MessageBar(
+
                 onSend: (msg) {
                   print('## message: $msg');
                   layCtr.sendMessage(msg);
+
                 },
                 replyWidgetColor: Colors.black54,
                 sendButtonColor: blueCol,

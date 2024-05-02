@@ -85,7 +85,7 @@ userCard(ScUser user,i,{bool tappable = true,bool canDelete = true,    Function(
                               text: TextSpan(children: [
                                 if (true)
                                   TextSpan(
-                                      text: 'email:'.tr,
+                                      text: 'email:',
                                       style: GoogleFonts.almarai(
                                         height: 1,
                                         textStyle: TextStyle(color: transparentTextCol, fontSize: 13, fontWeight: FontWeight.w500),
@@ -111,7 +111,7 @@ userCard(ScUser user,i,{bool tappable = true,bool canDelete = true,    Function(
                               text: TextSpan(children: [
                                 if (true)
                                   TextSpan(
-                                      text: 'phone:'.tr,
+                                      text: 'phone:',
                                       style: GoogleFonts.almarai(
                                         height: 1,
                                         textStyle: TextStyle(color: transparentTextCol, fontSize: 13, fontWeight: FontWeight.w500),
@@ -137,7 +137,7 @@ userCard(ScUser user,i,{bool tappable = true,bool canDelete = true,    Function(
                               text: TextSpan(children: [
                                 if (true)
                                   TextSpan(
-                                      text: 'joined:'.tr,
+                                      text: 'joined:',
                                       style: GoogleFonts.almarai(
                                         height: 1,
                                         textStyle: TextStyle(color: transparentTextCol, fontSize: 13, fontWeight: FontWeight.w500),
@@ -208,10 +208,10 @@ clubCard(Club clb,i,{bool tappable = true,    Function()? btnOnPress,}){
       if(tappable){
         layCtr.selectClub(clb.id);
         if(cUser.isAdmin){
-          layCtr.openClub();
+          openClub();
         }else{
           if(clb.members.contains(cUser.id)){
-            layCtr.openClub();
+            openClub();
 
           }else{
             layCtr.addRequest();
@@ -269,7 +269,7 @@ clubCard(Club clb,i,{bool tappable = true,    Function()? btnOnPress,}){
                                 text: TextSpan(children: [
                                   if (true)
                                     TextSpan(
-                                        text: 'memebers:'.tr,
+                                        text: 'memebers:',
                                         style: GoogleFonts.almarai(
                                           height: 1,
                                           textStyle: TextStyle(color: transparentTextCol, fontSize: 13, fontWeight: FontWeight.w500),
@@ -298,7 +298,7 @@ clubCard(Club clb,i,{bool tappable = true,    Function()? btnOnPress,}){
                                 text: TextSpan(children: [
                                   if (true)
                                     TextSpan(
-                                        text: 'about:'.tr,
+                                        text: 'about:',
                                         style: GoogleFonts.almarai(
                                           height: 1,
                                           textStyle: TextStyle(color: transparentTextCol, fontSize: 13, fontWeight: FontWeight.w500),
@@ -402,7 +402,7 @@ requestCard(JoinRequest req,i,{bool tappable = true,    Function()? btnOnPress,}
                               text: TextSpan(children: [
                                 if (true)
                                   TextSpan(
-                                      text: 'Would like to join the club '.tr,
+                                      text: 'Would like to join the club ',
                                       style: GoogleFonts.almarai(
                                         height: 1,
                                         textStyle: TextStyle(color: transparentTextCol, fontSize: 13, fontWeight: FontWeight.w500),
@@ -434,7 +434,7 @@ requestCard(JoinRequest req,i,{bool tappable = true,    Function()? btnOnPress,}
                                     layCtr.declineReq(req);
                                   },
                                   child: Text(
-                                    "Decline".tr,
+                                    "Decline",
                                     style: TextStyle(color: dialogBtnCancelTextCol),
                                   ),
                                 ),
@@ -446,7 +446,7 @@ requestCard(JoinRequest req,i,{bool tappable = true,    Function()? btnOnPress,}
                                     layCtr.acceptReq(req);
                                   },
                                   child: Text(
-                                    "Accept".tr,
+                                    "Accept",
                                     style: TextStyle(color: dialogBtnOkTextCol ),
                                   ),
                                 ),
@@ -557,7 +557,7 @@ eventCard(ClubEvent ev,i,{bool tappable = true, Function()? btnOnPress,}){
                       text: TextSpan(children: [
                         if (true)
                           TextSpan(
-                              text: 'about:'.tr,
+                              text: 'about:',
                               style: GoogleFonts.almarai(
                                 height: 1,
                                 textStyle: TextStyle(color: transparentTextCol, fontSize: 15, fontWeight: FontWeight.w500),

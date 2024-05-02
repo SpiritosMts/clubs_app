@@ -156,112 +156,10 @@ const Color primaryColor = Color(0xFF0097A7);
 const Color accentColor0   = Color(0xFF024855);
 
 
-final MaterialColor primarySwatch = MaterialColor(0xFF48b6da, {
-  50: Color(0xFFE0F4FA),
-  100: Color(0xFFB3E5FC),
-  200: Color(0xFF81D4FA),
-  300: Color(0xFF4FC3F7),
-  400: Color(0xFF29B6F6),
-  500: Color(0xFF03A9F4), // This is the primary color
-  600: Color(0xFF039BE5),
-  700: Color(0xFF0288D1),
-  800: Color(0xFF0277BD),
-  900: Color(0xFF01579B),
-});
 
 
-ButtonStyle blueStyle = TextButton.styleFrom(
-  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-  backgroundColor: blueCol,
-  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(100)),
-);
-/// //////////////// LIGHT /////////////////////////////////////////////////////////////////////////
-/// //////////////// LIGHT /////////////////////////////////////////////////////////////////////////
-/// //////////////// LIGHT /////////////////////////////////////////////////////////////////////////
-ThemeData customLightTheme = ThemeData(
-  useMaterial3: false,
-
-  brightness: Brightness.light,
-  scaffoldBackgroundColor: bgCol,
-  primarySwatch: primarySwatch,
-  unselectedWidgetColor: Colors.white24,
-
-  //canvasColor: bgCol,
-  visualDensity: VisualDensity.adaptivePlatformDensity,
-  tabBarTheme: TabBarTheme(
-    unselectedLabelColor: Colors.white38,
-    labelColor: Colors.white,
-    indicatorColor: Colors.white,
-
-    indicator: UnderlineTabIndicator(
-      borderSide: BorderSide(
-        color: Colors.white, // Color of the tab indicator
-        width: 3.0, // Thickness of the indicator
-      ),
-      insets: EdgeInsets.only(bottom: 8), // Distance from the bottom of the TabBar
-    ),
-  ),
-
-  listTileTheme: ListTileThemeData(
-    iconColor: navBarActive,
-  ),
-
-  iconTheme: IconThemeData(
-      color: navBarActive
-  ),
-
-  inputDecorationTheme:  InputDecorationTheme(
-    contentPadding:  EdgeInsets.only(top: 0,bottom: 15),
-fillColor: normalTextCol,
-
-    disabledBorder: UnderlineInputBorder(
-        borderSide: BorderSide(
-          color: transparentTextCol,
-          width: 1,
-        )),
-    enabledBorder: UnderlineInputBorder(
-        borderSide: BorderSide(
-          color: transparentTextCol,
-          width: 1,
-        )),
-    focusedBorder: UnderlineInputBorder(
-      borderSide: BorderSide(color: blueCol, width: 2),
-    ),
-    focusColor: normalTextCol
-  ),
-  dividerColor: Colors.white,
-
-  hintColor: hintPrimColor,
-
-  textTheme: textThemeGlob.apply(
-    decoration: TextDecoration.none,
-    decorationColor: Colors.white,
-    bodyColor: Colors.white,
-    displayColor: Colors.white,
-  ),
-  colorScheme: ColorScheme.fromSwatch(
-
-    accentColor: primarySwatch,
-    backgroundColor: bgCol,
-    primarySwatch: primarySwatch,
-  ).copyWith(secondary: primarySwatch),
-  //appbar
-
-  primaryColor: primarySwatch,
 
 
-  buttonTheme:  ButtonThemeData(
-    buttonColor: primarySwatch,
-    disabledColor: Colors.grey,
-  ),
-);
-/// //////////////// DARK /////////////////////////////////////////////////////////////////////////
-/// //////////////// DARK /////////////////////////////////////////////////////////////////////////
-/// //////////////// DARK /////////////////////////////////////////////////////////////////////////
-ThemeData customDarkTheme = ThemeData(
-
-);
-/// ##########################################################################
 /// ##########################################################################
 
 
@@ -285,15 +183,6 @@ ButtonStyle filledBtnStyle({Color color = dialogBtnOkCol}){
 }
 
 
-Color getRandomColor() {
-  final Random random = Random();
-  return Color.fromARGB(
-    255,
-    random.nextInt(256),
-    random.nextInt(256),
-    random.nextInt(256),
-  );
-}
 
 appBarUnderline(){
   return PreferredSize(

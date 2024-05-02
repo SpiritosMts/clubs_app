@@ -88,10 +88,9 @@ class AuthController extends GetxController {
   /// ************************ VERIFICATION CHECK ****************************************
   checkVerification({bool isLoadingScreen =false,bool updateIsLoggedIn =false}) async {
     print('## checking account verification state ...');
-    bool accountVerified = cUser.verified ;
     bool hasLoginAccess = true;
 
-    if (accountVerified && hasLoginAccess) {//verified
+    if ( hasLoginAccess) {//verified
       print('## account<${cUser.email}> verified ');
       //print('## gloabal loggedIn <${cUser.isLoggedIn }>  ');
       //print('## local loggedIn <${localLogin}>  ');
@@ -125,12 +124,12 @@ class AuthController extends GetxController {
 
       print('## error signIn, msg:<${e.message}>, code:<${e.code}>, credential:<${e.credential}>');
       if (e.code == 'user-not-found') {
-        showTos('User not found'.tr);
+        showTos('User not found');
       } else if (e.code == 'wrong-password') {
-        showTos('Wrong password'.tr);
+        showTos('Wrong password');
       }
       else{
-        showTos('There was an issue verifying the information you provided.'.tr);
+        showTos('There was an issue verifying the information you provided.');
       }
     } catch (e) {
       //Get.back();
@@ -154,12 +153,12 @@ class AuthController extends GetxController {
       //Get.back();
 
       if (e.code == 'weak-password') {
-        showTos('Weak password'.tr);
+        showTos('Weak password');
       } else if (e.code == 'email-already-in-use') {
-        showTos('Email already in use'.tr);
+        showTos('Email already in use');
       }
       else{
-        showTos('Please verify your credentials and try again.'.tr);
+        showTos('Please verify your credentials and try again.');
       }
     } catch (e) {
       //Get.back();
@@ -182,14 +181,14 @@ class AuthController extends GetxController {
   void ResetPss(String email) async {
     try {
       await firebaseAuth.sendPasswordResetEmail(email: email).then((uid) {
-        showTos('A password reset link has been sent to your email address.'.tr);
+        showTos('A password reset link has been sent to your email address.');
         //Get.back();
       });
 
     } on FirebaseAuthException catch (e) {
       print('## error resetPwd, msg:<${e.message}>, code:<${e.code}>, credential:<${e.credential}>');
 
-      showTos('connection error'.tr);
+      showTos('connection error');
 
     }catch (e) {
       //Get.back();
@@ -228,12 +227,7 @@ class AuthController extends GetxController {
   }
 
 
-  /// refresh user props from database
-  refreshCuser() async {
-    print('## refreshing cUser ...');
-    getUserInfoByEmail(authCtr.cUser.email,withVerif: false);//refresh
 
-  }
 
 
   /// GET-USER-INFO VY PROP
@@ -245,6 +239,7 @@ class AuthController extends GetxController {
       if (userDoc.exists) {
         var userData = userDoc.data() as Map<String, dynamic>; // Explicit casting
         cUser = ScUser.fromJson(userData);
+        ntfCtr.streamUserToken();//get & start token streaming
         printJson(cUser.toJson());
       } else {
         print('## user doc with email < $userEmail >  dont exist ');

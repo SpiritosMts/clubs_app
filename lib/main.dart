@@ -1,4 +1,6 @@
 import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:responsive_sizer/responsive_sizer.dart';
@@ -7,12 +9,11 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'bindings.dart';
 import 'firebase_options.dart';
 import 'loadingScreen.dart';
+import 'notif/notifCtr.dart';
 
 SharedPreferences? sharedPrefs;
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 Future<void> initFirebase() async {
-  /// FIREBASE_INIT
-
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
@@ -20,11 +21,21 @@ Future<void> initFirebase() async {
 
 void main() async {
   print('##run_main');
-  WidgetsFlutterBinding.ensureInitialized(); //don't touch
+
+  WidgetsFlutterBinding.ensureInitialized();
+  ///initialize firebase
   await initFirebase();
 
   ///PREFS
   sharedPrefs = await SharedPreferences.getInstance();
+
+  ///initilize notif
+  // setup local NOTIF
+  if (!kIsWeb) {//if mobile
+    await setupFlutterNotifications();
+  }
+  // Firebase msging BG listen
+  FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
 
   /// RUN_APP
   runApp(MyApp()); //should contain materialApp

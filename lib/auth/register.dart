@@ -5,7 +5,6 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:responsive_sizer/responsive_sizer.dart';
 
-import '../../privateData.dart';
 import '../bindings.dart';
 import '../firebaseVoids.dart';
 import '../myUi.dart';
@@ -59,11 +58,6 @@ class _RegisterFormState extends State<RegisterForm> {
         pwd: passwordTec.text,
         phone:phoneTec.text ,
         address:  addressTec.text,
-      haveAccess: true,
-
-
-      role:                       authCtr.roles[0],
-      verified:true,
         joinTime: todayToString(showHoursNminutes: true),
     );
 
@@ -89,7 +83,7 @@ class _RegisterFormState extends State<RegisterForm> {
 
 
     if (_registerFormkey.currentState!.validate()) {
-      showLoading(text: 'Connecting'.tr);
+      showLoading(text: 'Connecting');
 
       authCtr.signUp(userEmail, passwordTec.text, onSignUp: () {
         addUserDoc();
@@ -120,7 +114,7 @@ class _RegisterFormState extends State<RegisterForm> {
                   SizedBox(height: 50,),
                   Container(
                     child:  Text(
-                      'Register'.tr,
+                      'Register',
                       style: TextStyle(
                           fontFamily: 'Segoe UI',
                           fontSize: 35,
@@ -146,12 +140,12 @@ class _RegisterFormState extends State<RegisterForm> {
                   // business name
                   customTextField(
                     controller: nameTec,
-                    labelText: 'Name'.tr,
-                    //hintText: 'Enter your business name'.tr,
+                    labelText: 'Name',
+                    //hintText: 'Enter your business name',
                     icon: Icons.person,
                     validator: (value) {
                       if (value!.isEmpty) {
-                        return "name can't be empty".tr;
+                        return "name can't be empty";
                       }
                      else {
                         return null;
@@ -163,15 +157,15 @@ class _RegisterFormState extends State<RegisterForm> {
                   //email
                   customTextField(
                     controller: emailTec,
-                    labelText: 'Email'.tr,
-                    //hintText: 'Enter your email'.tr,
+                    labelText: 'Email',
+                    //hintText: 'Enter your email',
                     icon: Icons.email,
                     validator: (value) {
                       if (value!.isEmpty) {
-                        return "email can't be empty".tr;
+                        return "email can't be empty";
                       }
                       if (!EmailValidator.validate(value)) {
-                        return ("Enter a valid email".tr);
+                        return ("Enter a valid email");
                       } else {
                         return null;
                       }
@@ -182,8 +176,8 @@ class _RegisterFormState extends State<RegisterForm> {
                     // ggl reg dont need pwd
                     customTextField(
                       controller: passwordTec,
-                      labelText: 'Password'.tr,
-                      //hintText: 'Enter your password'.tr,
+                      labelText: 'Password',
+                      //hintText: 'Enter your password',
                       icon: Icons.lock,
                       isPwd: true,
                       obscure: _isPwdObscure,
@@ -195,10 +189,10 @@ class _RegisterFormState extends State<RegisterForm> {
                       validator: (value) {
                         RegExp regex = RegExp(r'^.{6,}$');
                         if (value!.isEmpty) {
-                          return "password can't be empty".tr;
+                          return "password can't be empty";
                         }
                         if (!regex.hasMatch(value)) {
-                          return ('Enter a valid password of at least 6 characters'.tr);
+                          return ('Enter a valid password of at least 6 characters');
                         } else {
                           return null;
                         }
@@ -211,15 +205,15 @@ class _RegisterFormState extends State<RegisterForm> {
                     textInputType: TextInputType.number,
 
                     controller: phoneTec,
-                    labelText: 'Phone'.tr,
-                    //hintText: 'Enter your number'.tr,
+                    labelText: 'Phone',
+                    //hintText: 'Enter your number',
                     icon: Icons.phone,
                     isPwd: false,
                     obscure: false,
                     onSuffClick: (){},
                     validator: (value) {
                       if (value!.isEmpty) {
-                        return "number can't be empty".tr;
+                        return "number can't be empty";
                       }
                       else {
                         return null;
@@ -230,12 +224,12 @@ class _RegisterFormState extends State<RegisterForm> {
 
                   customTextField(//address
                     controller: addressTec,
-                    labelText: 'Address'.tr,
-                    //hintText: 'Enter your address'.tr,
+                    labelText: 'Address',
+                    //hintText: 'Enter your address',
                     icon: Icons.home,
                     validator: (value) {
                       if (value!.isEmpty) {
-                        return "address can't be empty".tr;
+                        return "address can't be empty";
                       }
                      else {
                         return null;
@@ -269,7 +263,7 @@ class _RegisterFormState extends State<RegisterForm> {
                         addNewUser();
                       },
                       child:  Text(
-                        "Create account".tr,
+                        "Create account",
                         style: TextStyle(
                             fontSize: 16,
                             color: btnTextCol,

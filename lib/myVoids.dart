@@ -22,6 +22,7 @@ import 'package:intl/intl.dart';
 import 'package:loading_indicator/loading_indicator.dart';
 import 'package:responsive_sizer/responsive_sizer.dart';
 
+import 'admin/clubDetails.dart';
 import 'generalLayout/generalLayout.dart';
 import '../main.dart';
 import 'auth/login.dart';
@@ -31,15 +32,12 @@ import 'models/user.dart';
 import 'styles.dart';
 
 ScUser get cUser => authCtr.cUser;
-User? get authCurrUser => FirebaseAuth.instance.currentUser;
-FirebaseDatabase? get database => FirebaseDatabase.instance;//real time database
 FirebaseAuth get firebaseAuth => FirebaseAuth.instance;
-var commaFormatter = NumberFormat('#,###,###');
 
 
 String appDisplayName = 'ClubVibe';
 
-String snapshotErrorMsg = 'check Connexion'.tr;
+String snapshotErrorMsg = 'check Connexion';
 
 
 CollectionReference usersColl = FirebaseFirestore.instance.collection('users');
@@ -71,7 +69,9 @@ void goRegister(){
 goHome(){
   Get.offAll(() => GeneralLayout(), transition: Transition.leftToRight, duration: const Duration(milliseconds: 500),);
 }
-
+openClub(){
+  Get.to(()=>ClubDetails());
+}
 
 
 
@@ -80,20 +80,6 @@ goHome(){
 
 
 //maps-lists
-Map<String, Map<String, dynamic>> orderMapByTime(Map<String, dynamic> mp){
-  List<MapEntry<String, dynamic>> list = mp.entries.toList();
-  list.sort((a, b) {
-    DateTime timeA = dateFormatHM.parse(a.value['time']);
-    DateTime timeB = dateFormatHM.parse(b.value['time']);
-    return timeB.compareTo(timeA);
-  });
-  Map<String, Map<String, dynamic>> sortedMap = {};
-  list.asMap().forEach((index, entry) {
-    sortedMap[entry.key] = entry.value;
-  });
-
-  return sortedMap;
-}
 String getLastIndex(Map<String, dynamic> fieldMap, {String? cr,  bool afterLast = false}) {
   int newItemIndex = 0;
   Map<String, dynamic>  map = cr !=null? removeSubstringFromKeys(cr, fieldMap):fieldMap;
@@ -136,11 +122,7 @@ printJson(json) {
 
 
 //date-time
-String extractDate(String dateTimeString) {
-  List<String> parts = dateTimeString.split(' '); // Split the string by space
-  String datePart = parts[0]; // Get the first part, which is the date
-  return datePart;
-}
+
 bool isDateToday(String dateString) {
   // Create a DateFormat instance to parse the date string
 
@@ -156,31 +138,31 @@ bool isDateToday(String dateString) {
 String getMonthName(int monthNumber) {
   switch (monthNumber) {
     case 1:
-      return "January".tr;
+      return "January";
     case 2:
-      return "February".tr;
+      return "February";
     case 3:
-      return "March".tr;
+      return "March";
     case 4:
-      return "April".tr;
+      return "April";
     case 5:
-      return "May".tr;
+      return "May";
     case 6:
-      return "June".tr;
+      return "June";
     case 7:
-      return "July".tr;
+      return "July";
     case 8:
-      return "August".tr;
+      return "August";
     case 9:
-      return "September".tr;
+      return "September";
     case 10:
-      return "October".tr;
+      return "October";
     case 11:
-      return "November".tr;
+      return "November";
     case 12:
-      return "December".tr;
+      return "December";
     default:
-      return "Unknown".tr;
+      return "Unknown";
   }
 }
 String getWeekdayName(int weekdayIndex) {
@@ -259,10 +241,10 @@ showVerifyConnexion(){
     descTextStyle: TextStyle(fontSize: 15.sp,color: dialogDescCol),
     buttonsTextStyle: TextStyle(fontSize: 14.sp),
 
-    title: 'Failed to Connect'.tr,
-    desc: 'please verify network'.tr,
+    title: 'Failed to Connect',
+    desc: 'please verify network',
 
-    btnOkText: 'Retry'.tr,
+    btnOkText: 'Retry',
     btnOkOnPress: () {},
     onDismissCallback: (type) {
       print('Dialog Dissmiss from callback $type');
@@ -301,10 +283,9 @@ showLoading({required String text}) {
 
 
     title: text,
-    desc: 'Please wait'.tr,
+    desc: 'Please wait',
   ).show();
 }
-
 Future<bool> showNoHeader({String? txt, String? btnOkText, Color btnOkColor = errorColor, IconData? icon}) async {
   bool shouldDelete = false;
 
@@ -333,7 +314,7 @@ Future<bool> showNoHeader({String? txt, String? btnOkText, Color btnOkColor = er
         Get.back();
       },
       child: Text(
-        "Cancel".tr,
+        "Cancel",
         style: TextStyle(color: dialogBtnCancelTextCol),
       ),
     ),
@@ -344,7 +325,7 @@ Future<bool> showNoHeader({String? txt, String? btnOkText, Color btnOkColor = er
         Get.back();
       },
       child: Text(
-        btnOkText ?? 'delete'.tr,
+        btnOkText ?? 'delete',
         style: TextStyle(color: dialogBtnOkTextCol),
       ),
     ),
@@ -354,10 +335,10 @@ Future<bool> showNoHeader({String? txt, String? btnOkText, Color btnOkColor = er
 
     padding: EdgeInsets.symmetric(vertical: 15, horizontal: 10),
     // texts
-    title: 'Verification'.tr,
-    desc: txt ?? 'Are you sure you want to delete this image'.tr,
-    btnCancelText: 'cancel'.tr,
-    btnOkText: btnOkText ?? 'delete'.tr,
+    title: 'Verification',
+    desc: txt ?? 'Are you sure you want to delete this image',
+    btnCancelText: 'cancel',
+    btnOkText: btnOkText ?? 'delete',
 
     // buttons functions
     btnOkOnPress: () {
@@ -429,7 +410,7 @@ Future<PickedFile>  showImageChoiceDialog()async  {
         return AlertDialog(
           backgroundColor: dialogBgCol,
           title:  Text(
-            "Choose source".tr,
+            "Choose source",
           ),
           content: SingleChildScrollView(
             child: ListBody(
@@ -441,7 +422,7 @@ Future<PickedFile>  showImageChoiceDialog()async  {
                   onTap: () async{
                     image = await selectImage(ImageSource.gallery);
                   },
-                  title: Text("Gallery".tr),
+                  title: Text("Gallery"),
                   leading: const Icon(
                     Icons.image,
                   ),
@@ -453,7 +434,7 @@ Future<PickedFile>  showImageChoiceDialog()async  {
                   onTap: () async {
                     image = await selectImage(ImageSource.camera);
                   },
-                  title: Text("Camera".tr),
+                  title: Text("Camera"),
                   leading: const Icon(
                     Icons.camera,
                   ),
